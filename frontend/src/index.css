@@ -1,0 +1,74 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* CSS Custom Properties for Dynamic Theming */
+:root {
+  --theme-color: #3B82F6; /* Default blue */
+  --theme-color-dark: #2563EB; /* Darker shade for hover */
+  --theme-color-light: #EFF6FF; /* Lighter shade for backgrounds */
+}
+
+/* Global styles */
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Custom utility classes using theme color variables */
+.btn-primary {
+  @apply px-4 py-3 rounded transition;
+  background-color: var(--theme-color);
+  color: var(--secondary-theme-color);
+}
+
+.btn-primary:hover {
+  background-color: var(--theme-color-dark);
+}
+
+.btn-secondary {
+  @apply bg-gray-600 text-white px-4 py-3 rounded hover:bg-gray-700 transition;
+}
+
+.btn-danger {
+  @apply bg-red-600 text-white px-4 py-3 rounded hover:bg-red-700 transition;
+}
+
+.input-field {
+  @apply border border-gray-300 rounded px-3 py-3 w-full focus:outline-none focus:ring-2;
+  --tw-ring-color: var(--theme-color);
+}
+
+.input-field:focus {
+  border-color: var(--theme-color);
+  ring-color: var(--theme-color);
+}
+
+.card {
+  @apply bg-white rounded-lg shadow-md p-4;
+}
+
+/* Theme color utility classes */
+.text-theme {
+  color: var(--theme-color);
+}
+
+.bg-theme {
+  background-color: var(--theme-color);
+}
+
+.border-theme {
+  border-color: var(--theme-color);
+}
+
+.hover\:text-theme:hover {
+  color: var(--theme-color);
+}
+
+.hover\:bg-theme:hover {
+  background-color: var(--theme-color);
+}
