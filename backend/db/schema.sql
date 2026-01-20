@@ -36,6 +36,7 @@ CREATE TABLE dealership (
   email VARCHAR(255) NOT NULL,
   hours TEXT,
   about TEXT,
+  website_url VARCHAR(255) UNIQUE,
   created_at TIMESTAMP DEFAULT NOW()
 );
 
@@ -135,6 +136,9 @@ CREATE INDEX idx_sales_request_created_at ON sales_request(created_at DESC);
 
 -- Composite index for common query pattern (dealership + status filtering)
 CREATE INDEX idx_vehicle_dealership_status ON vehicle(dealership_id, status);
+
+-- Dealership URL lookup index (for domain-based routing in future)
+CREATE INDEX idx_dealership_website_url ON dealership(website_url);
 
 -- ============================================================================
 -- SCHEMA SETUP COMPLETE

@@ -29,6 +29,7 @@ import DealerSettings from './pages/admin/DealerSettings';
 import BlogList from './pages/admin/BlogList';
 import BlogForm from './pages/admin/BlogForm';
 import UserManagement from './pages/admin/UserManagement';
+import DealershipManagement from './pages/admin/DealershipManagement';
 
 /**
  * App - Root component with routing configuration.
@@ -81,6 +82,7 @@ function App() {
             <Route path="blogs/new" element={<BlogForm />} />
             <Route path="blogs/edit/:id" element={<BlogForm />} />
             <Route path="users" element={<UserManagement />} />
+            <Route path="dealerships" element={<DealershipManagement />} />
           </Route>
           </Routes>
         </BrowserRouter>

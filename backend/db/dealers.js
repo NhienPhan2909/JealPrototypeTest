@@ -62,6 +62,7 @@ async function getById(dealershipId) {
  * @param {string} [updates.finance_promo_text] - Finance promotional panel text overlay
  * @param {string} [updates.warranty_promo_image] - Warranty promotional panel background image URL
  * @param {string} [updates.warranty_promo_text] - Warranty promotional panel text overlay
+ * @param {string} [updates.website_url] - Custom website URL/domain (e.g., 'acme-auto.com')
  * @returns {Promise<Object|null>} Updated dealership object or null if not found
  * @throws {Error} If database query fails
  *
@@ -174,6 +175,10 @@ async function update(dealershipId, updates) {
     fields.push(`warranty_promo_text = $${paramIndex++}`);
     values.push(updates.warranty_promo_text);
   }
+  if (updates.website_url !== undefined) {
+    fields.push(`website_url = $${paramIndex++}`);
+    values.push(updates.website_url);
+  }
 
   if (fields.length === 0) {
     throw new Error('No fields to update');
@@ -211,8 +216,81 @@ async function getAll() {
   return result.rows;
 }
 
+/**
+ * Creates a new dealership (admin-only function).
+ *
+ * @param {Object} dealershipData - Dealership data to create
+ * @param {string} dealershipData.name - Dealership name (required)
+ * @param {string} dealershipData.address - Street address (required)
+ * @param {string} dealershipData.phone - Phone number (required)
+ * @param {string} dealershipData.email - Email address (required)
+ * @param {string} [dealershipData.logo_url] - Logo image URL (optional)
+ * @param {string} [dealershipData.hours] - Business hours (optional)
+ * @param {string} [dealershipData.about] - About text (optional)
+ * @param {string} [dealershipData.website_url] - Custom website URL/domain (optional)
+ * @returns {Promise<Object>} Created dealership object with generated ID
+ * @throws {Error} If database query fails
+ *
+ * @example
+ * const newDealership = await create({
+ *   name: 'New Auto Sales',
+ *   address: '123 Main St',
+ *   phone: '555-1234',
+ *   email: 'info@newautosales.com'
+ * });
+ */
+async function create(dealershipData) {
+  const {
+    name,
+    address,
+    phone,
+    email,
+    logo_url,
+    hours,
+    about,
+    website_url
+  } = dealershipData;
+
+  const query = `
+    INSERT INTO dealership (name, address, phone, email, logo_url, hours, about, website_url)
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+    RETURNING *
+  `;
+
+  const values = [name, address, phone, email, logo_url || null, hours || null, about || null, website_url || null];
+  const result = await pool.query(query, values);
+  return result.rows[0];
+}
+
+/**
+ * Deletes a dealership by ID (admin-only function).
+ *
+ * CRITICAL: This function performs a hard delete. Due to ON DELETE CASCADE
+ * constraints in the database schema, deleting a dealership will also delete:
+ * - All vehicles associated with the dealership
+ * - All leads associated with the dealership
+ * - All sales requests associated with the dealership
+ * - All blog posts associated with the dealership
+ * - All users (owners and staff) associated with the dealership
+ *
+ * @param {number} dealershipId - The dealership ID to delete
+ * @returns {Promise<Object|null>} Deleted dealership object or null if not found
+ * @throws {Error} If database query fails
+ *
+ * @example
+ * const deleted = await deleteDealership(3);
+ * // Returns: { id: 3, name: 'Test Auto Sales', ... }
+ */
+async function deleteDealership(dealershipId) {
+  const query = 'DELETE FROM dealership WHERE id = $1 RETURNING *';
+  const result = await pool.query(query, [dealershipId]);
+  return result.rows[0] || null;
+}
+
 module.exports = {
   getById,
   update,
-  getAll
+  getAll,
+  create,
+  deleteDealership
 };

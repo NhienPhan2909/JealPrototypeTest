@@ -8,7 +8,7 @@ import { useContext, useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { AdminContext } from '../context/AdminContext';
 import { useDealershipContext } from '../context/DealershipContext';
-import { hasPermission, canManageUsers } from '../utils/permissions';
+import { hasPermission, canManageUsers, isAdmin } from '../utils/permissions';
 
 /**
  * AdminHeader - Admin panel header component.
@@ -137,6 +137,7 @@ export default function AdminHeader() {
 
   // Check permissions for nav links
   const canManageUsersLink = canManageUsers(user);
+  const isAdminUser = isAdmin(user);
   
   // All authenticated users can VIEW all sections
   // Staff will see read-only banners if they don't have edit permission
@@ -247,6 +248,15 @@ export default function AdminHeader() {
                 className="text-white hover:text-blue-300 transition whitespace-nowrap"
               >
                 User Management
+              </Link>
+            )}
+            
+            {isAdminUser && (
+              <Link
+                to="/admin/dealerships"
+                className="text-white hover:text-blue-300 transition whitespace-nowrap"
+              >
+                Dealership Management
               </Link>
             )}
           </div>

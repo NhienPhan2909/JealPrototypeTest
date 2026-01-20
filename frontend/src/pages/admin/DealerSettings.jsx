@@ -51,6 +51,7 @@ function DealerSettings() {
   const [financePromoText, setFinancePromoText] = useState('');
   const [warrantyPromoImage, setWarrantyPromoImage] = useState('');
   const [warrantyPromoText, setWarrantyPromoText] = useState('');
+  const [websiteUrl, setWebsiteUrl] = useState('');
 
   const {
     register,
@@ -110,6 +111,7 @@ function DealerSettings() {
             setFinancePromoText(data.finance_promo_text || '');
             setWarrantyPromoImage(data.warranty_promo_image || '');
             setWarrantyPromoText(data.warranty_promo_text || '');
+            setWebsiteUrl(data.website_url || '');
           }
         } catch (err) {
           console.error('Failed to fetch dealership data:', err);
@@ -572,7 +574,8 @@ function DealerSettings() {
       finance_promo_image: financePromoImage || null,
       finance_promo_text: financePromoText || null,
       warranty_promo_image: warrantyPromoImage || null,
-      warranty_promo_text: warrantyPromoText || null
+      warranty_promo_text: warrantyPromoText || null,
+      website_url: websiteUrl || null
     };
 
     try {
@@ -698,6 +701,29 @@ function DealerSettings() {
               {errors.name && (
                 <p className="text-red-500 text-sm mt-1">{errors.name.message}</p>
               )}
+            </div>
+
+            {/* Website URL */}
+            <div>
+              <label htmlFor="website_url" className="block font-medium mb-1">
+                Website URL
+              </label>
+              <p className="text-sm text-gray-600 mb-2">
+                Custom URL/domain for this dealership's website (e.g., acme-auto.com). Leave empty if not applicable.
+              </p>
+              <input
+                id="website_url"
+                type="text"
+                placeholder="e.g., acme-auto.com"
+                value={websiteUrl}
+                onChange={(e) => setWebsiteUrl(e.target.value)}
+                disabled={loading || !canEditSettings}
+                className="input-field w-full"
+                maxLength={255}
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                This URL will be used to identify your dealership's website. It must be unique across all dealerships.
+              </p>
             </div>
 
             {/* Theme Color Picker */}

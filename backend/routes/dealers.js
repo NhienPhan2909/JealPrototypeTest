@@ -5,14 +5,16 @@
  * Routes:
  * - GET    /api/dealers       - List all dealerships
  * - GET    /api/dealers/:id   - Get single dealership
+ * - POST   /api/dealers       - Create new dealership (admin only)
  * - PUT    /api/dealers/:id   - Update dealership (auth not required for MVP)
+ * - DELETE /api/dealers/:id   - Delete dealership (admin only)
  */
 
 const express = require('express');
 const router = express.Router();
 const dealersDb = require('../db/dealers');
 const validateNavigationConfig = require('../middleware/validateNavigationConfig');
-const { requireAuth, requirePermission, enforceDealershipScope } = require('../middleware/auth');
+const { requireAuth, requireAdmin, requirePermission, enforceDealershipScope } = require('../middleware/auth');
 
 /**
  * Email validation regex.
@@ -38,7 +40,8 @@ const FIELD_LIMITS = {
   body_background_color: 7, // Hex color format: #RRGGBB
   font_family: 100, // Font identifier (e.g., 'times', 'arial', 'system')
   finance_promo_text: 500,
-  warranty_promo_text: 500
+  warranty_promo_text: 500,
+  website_url: 255 // Custom URL/domain
 };
 
 /**
@@ -154,6 +157,78 @@ router.get('/:id', async (req, res) => {
 });
 
 /**
+ * POST /api/dealers - Create new dealership.
+ * Used by System Administrator to create new dealership websites.
+ *
+ * SECURITY Measures:
+ * - Admin-only access: Only System Administrators can create dealerships
+ * - Input sanitization: Escapes HTML characters in text fields to prevent XSS
+ * - Email validation: Validates email format using regex
+ * - Length validation: Prevents oversized inputs
+ *
+ * @param {Object} req.body - Dealership fields
+ * @param {string} req.body.name - Dealership name (required)
+ * @param {string} req.body.address - Street address (required)
+ * @param {string} req.body.phone - Phone number (required)
+ * @param {string} req.body.email - Email address (required)
+ * @param {string} [req.body.logo_url] - Logo image URL (optional)
+ * @param {string} [req.body.hours] - Business hours (optional)
+ * @param {string} [req.body.about] - About text (optional)
+ * @param {string} [req.body.website_url] - Custom website URL/domain (optional)
+ * @returns {Object} Created dealership object with generated ID
+ * @throws {400} If required fields missing, invalid email format, or field too long
+ * @throws {403} If user is not admin
+ * @throws {500} If database query fails
+ */
+router.post('/', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const { name, address, phone, email, logo_url, hours, about, website_url } = req.body;
+
+    // Input validation - check required fields
+    if (!name || !address || !phone || !email) {
+      return res.status(400).json({
+        error: 'Missing required fields: name, address, phone, email'
+      });
+    }
+
+    // Validate field lengths (defense-in-depth)
+    const lengthValidation = validateFieldLengths(req.body);
+    if (lengthValidation) {
+      return res.status(400).json(lengthValidation);
+    }
+
+    // Validate email format
+    if (!validateEmailFormat(email)) {
+      return res.status(400).json({ error: 'Invalid email format' });
+    }
+
+    // Sanitize user inputs to prevent XSS attacks
+    const sanitizedName = sanitizeInput(name);
+    const sanitizedAddress = sanitizeInput(address);
+    const sanitizedPhone = sanitizeInput(phone);
+    const sanitizedHours = hours ? sanitizeInput(hours) : undefined;
+    const sanitizedAbout = about ? sanitizeInput(about) : undefined;
+
+    // Create dealership with sanitized data
+    const newDealer = await dealersDb.create({
+      name: sanitizedName,
+      address: sanitizedAddress,
+      phone: sanitizedPhone,
+      email,
+      logo_url,
+      hours: sanitizedHours,
+      about: sanitizedAbout,
+      website_url: website_url || null
+    });
+
+    res.status(201).json(newDealer);
+  } catch (error) {
+    console.error('Error creating dealership:', error);
+    res.status(500).json({ error: 'Failed to create dealership' });
+  }
+});
+
+/**
  * PUT /api/dealers/:id - Update dealership profile.
  * Used by admin CMS to update dealership settings.
  *
@@ -189,6 +264,7 @@ router.get('/:id', async (req, res) => {
  * @param {string} [req.body.finance_promo_text] - Finance promotional panel text overlay (optional)
  * @param {string} [req.body.warranty_promo_image] - Warranty promotional panel background image URL (optional)
  * @param {string} [req.body.warranty_promo_text] - Warranty promotional panel text overlay (optional)
+ * @param {string} [req.body.website_url] - Custom website URL/domain (optional)
  * @returns {Object} Updated dealership object
  * @throws {400} If required fields missing, invalid email format, field too long, or invalid ID
  * @throws {404} If dealership not found
@@ -202,7 +278,7 @@ router.put('/:id', requireAuth, enforceDealershipScope, requirePermission('setti
       return res.status(400).json({ error: 'Dealership ID must be a valid positive number' });
     }
 
-    const { name, address, phone, email, logo_url, hours, finance_policy, warranty_policy, about, hero_background_image, hero_type, hero_video_url, hero_carousel_images, theme_color, secondary_theme_color, body_background_color, font_family, navigation_config, facebook_url, instagram_url, finance_promo_image, finance_promo_text, warranty_promo_image, warranty_promo_text } = req.body;
+    const { name, address, phone, email, logo_url, hours, finance_policy, warranty_policy, about, hero_background_image, hero_type, hero_video_url, hero_carousel_images, theme_color, secondary_theme_color, body_background_color, font_family, navigation_config, facebook_url, instagram_url, finance_promo_image, finance_promo_text, warranty_promo_image, warranty_promo_text, website_url } = req.body;
 
     // Check if this is a partial update (only updating optional fields like navigation_config)
     const isPartialUpdate = !name && !address && !phone && !email;
@@ -279,6 +355,7 @@ router.put('/:id', requireAuth, enforceDealershipScope, requirePermission('setti
     if (sanitizedFinancePromoText !== undefined) updateData.finance_promo_text = sanitizedFinancePromoText;
     if (warranty_promo_image !== undefined) updateData.warranty_promo_image = warranty_promo_image;
     if (sanitizedWarrantyPromoText !== undefined) updateData.warranty_promo_text = sanitizedWarrantyPromoText;
+    if (website_url !== undefined) updateData.website_url = website_url;
 
     // Update dealership with sanitized data
     const updatedDealer = await dealersDb.update(dealershipId, updateData);
@@ -291,6 +368,57 @@ router.put('/:id', requireAuth, enforceDealershipScope, requirePermission('setti
   } catch (error) {
     console.error('Error updating dealer:', error);
     res.status(500).json({ error: 'Failed to update dealership' });
+  }
+});
+
+/**
+ * DELETE /api/dealers/:id - Delete dealership.
+ * Used by System Administrator to delete dealerships.
+ *
+ * CRITICAL WARNING:
+ * This endpoint performs a HARD DELETE with CASCADE effects:
+ * - Deletes the dealership record
+ * - Deletes ALL vehicles associated with the dealership
+ * - Deletes ALL leads associated with the dealership
+ * - Deletes ALL sales requests associated with the dealership
+ * - Deletes ALL blog posts associated with the dealership
+ * - Deletes ALL users (owners and staff) associated with the dealership
+ *
+ * This action is IRREVERSIBLE. All data will be permanently lost.
+ *
+ * SECURITY Measures:
+ * - Admin-only access: Only System Administrators can delete dealerships
+ * - ID validation: Ensures valid positive dealership ID
+ *
+ * @param {number} req.params.id - Dealership ID to delete
+ * @returns {Object} Success message with deleted dealership details
+ * @throws {400} If dealership ID is invalid (non-numeric or negative)
+ * @throws {403} If user is not admin
+ * @throws {404} If dealership not found
+ * @throws {500} If database query fails
+ */
+router.delete('/:id', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    // Validate dealership ID is numeric and positive
+    const dealershipId = parseInt(req.params.id, 10);
+    if (isNaN(dealershipId) || dealershipId <= 0) {
+      return res.status(400).json({ error: 'Dealership ID must be a valid positive number' });
+    }
+
+    // Delete dealership (cascades to related records)
+    const deletedDealer = await dealersDb.deleteDealership(dealershipId);
+
+    if (!deletedDealer) {
+      return res.status(404).json({ error: 'Dealership not found' });
+    }
+
+    res.json({ 
+      message: 'Dealership deleted successfully',
+      dealership: deletedDealer 
+    });
+  } catch (error) {
+    console.error('Error deleting dealership:', error);
+    res.status(500).json({ error: 'Failed to delete dealership' });
   }
 });
 

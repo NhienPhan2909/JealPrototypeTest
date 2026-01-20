@@ -7,9 +7,9 @@ This document provides complete API specifications for the Multi-Dealership Car 
 **Base URL:** `http://localhost:5000/api`
 **Production URL:** (To be configured on Railway deployment)
 
-**Date:** 2025-11-21
-**Version:** 1.0
-**Last Updated:** Story 1.7
+**Date:** 2026-01-14
+**Version:** 2.0
+**Last Updated:** Dealership Management (Create/Delete)
 
 ---
 
@@ -183,11 +183,86 @@ curl -X GET http://localhost:5000/api/dealers/1 \
 
 ---
 
-### 6. PUT /api/dealers/:id
+### 6. POST /api/dealers
+
+Create a new dealership (Admin only).
+
+**Authentication:** Required (Admin only)
+
+**Authorization:** `user_type: 'admin'` required
+
+**Request Body:**
+```json
+{
+  "name": "New Auto Sales",
+  "address": "123 Main St, City, State 12345",
+  "phone": "(555) 123-4567",
+  "email": "info@newautosales.com",
+  "logo_url": "https://example.com/logo.png",
+  "hours": "Mon-Fri: 9am-6pm\nSat: 10am-4pm\nSun: Closed",
+  "about": "Family owned dealership serving the community since 1985."
+}
+```
+
+**Required Fields:**
+- `name` (string, max 255 chars)
+- `address` (string, max 255 chars)
+- `phone` (string, max 20 chars)
+- `email` (string, max 255 chars, valid email format)
+
+**Optional Fields:**
+- `logo_url` (string)
+- `hours` (string, max 500 chars)
+- `about` (string, max 2000 chars)
+
+**Success Response (201 Created):**
+```json
+{
+  "id": 3,
+  "name": "New Auto Sales",
+  "address": "123 Main St, City, State 12345",
+  "phone": "(555) 123-4567",
+  "email": "info@newautosales.com",
+  "logo_url": "https://example.com/logo.png",
+  "hours": "Mon-Fri: 9am-6pm\nSat: 10am-4pm\nSun: Closed",
+  "about": "Family owned dealership serving the community since 1985.",
+  "created_at": "2026-01-14T02:30:00.000Z",
+  "theme_color": null,
+  "hero_background_image": null
+}
+```
+
+**Error Responses:**
+- `400 Bad Request` - Missing required fields, invalid email format, or field too long
+- `403 Forbidden` - User is not admin
+- `500 Internal Server Error` - Database error
+
+**Security Notes:**
+- Admin authentication required
+- All text inputs are sanitized to prevent XSS attacks
+- Email format is validated using regex
+- Field length limits enforced
+
+**curl Example:**
+```bash
+curl -X POST http://localhost:5000/api/dealers \
+  -H "Content-Type: application/json" \
+  --cookie "session_cookie_here" \
+  -d '{
+    "name": "New Auto Sales",
+    "address": "123 Main St, City, State 12345",
+    "phone": "(555) 123-4567",
+    "email": "info@newautosales.com"
+  }'
+```
+
+---
+
+### 7. PUT /api/dealers/:id
 
 Update dealership profile information.
 
-**Authentication:** None (will be added in future story)
+**Authentication:** Required (Authenticated users)
 
 **URL Parameters:**
 - `id` (number, required) - Dealership ID
@@ -253,11 +328,73 @@ curl -X PUT http://localhost:5000/api/dealers/1 \
 
 ---
 
+### 8. DELETE /api/dealers/:id
+
+Delete a dealership and all related data (Admin only).
+
+⚠️ **CRITICAL WARNING:** This endpoint performs a HARD DELETE with CASCADE effects:
+- Deletes the dealership record
+- Deletes ALL vehicles associated with the dealership
+- Deletes ALL leads associated with the dealership
+- Deletes ALL sales requests associated with the dealership
+- Deletes ALL blog posts associated with the dealership
+- Deletes ALL user accounts (owners and staff) associated with the dealership
+
+**This action is IRREVERSIBLE. All data will be permanently lost.**
+
+**Authentication:** Required (Admin only)
+
+**Authorization:** `user_type: 'admin'` required
+
+**URL Parameters:**
+- `id` (number, required) - Dealership ID to delete
+
+**Success Response (200 OK):**
+```json
+{
+  "message": "Dealership deleted successfully",
+  "dealership": {
+    "id": 3,
+    "name": "Test Auto Sales",
+    "address": "123 Main St",
+    "phone": "(555) 123-4567",
+    "email": "info@testautosales.com",
+    "created_at": "2026-01-14T02:30:00.000Z"
+  }
+}
+```
+
+**Error Responses:**
+- `400 Bad Request` - Invalid dealership ID (non-numeric or negative)
+- `403 Forbidden` - User is not admin
+- `404 Not Found` - Dealership not found
+- `500 Internal Server Error` - Database error
+
+**Security Notes:**
+- Admin authentication required
+- ID validation (must be positive integer)
+- Database CASCADE constraints automatically delete related records
+- No recovery mechanism - deletion is permanent
+
+**Frontend Safety Measures:**
+- User must type exact dealership name to confirm
+- Strong warning messages about consequences
+- Multi-step confirmation process
+
+**curl Example:**
+```bash
+curl -X DELETE http://localhost:5000/api/dealers/3 \
+  -H "Content-Type: application/json" \
+  --cookie "session_cookie_here"
+```
+
+---
+
 ## Vehicle Endpoints
 
 **SECURITY (SEC-001):** All vehicle endpoints require `dealershipId` query parameter to enforce multi-tenant data isolation and prevent cross-dealership access.
 
-### 7. GET /api/vehicles?dealershipId=<id>
+### 9. GET /api/vehicles?dealershipId=<id>
 
 List vehicles for specific dealership with optional status filter.
 
@@ -308,7 +445,7 @@ curl -X GET "http://localhost:5000/api/vehicles?dealershipId=1&status=active" \
 
 ---
 
-### 8. GET /api/vehicles/:id?dealershipId=<id>
+### 10. GET /api/vehicles/:id?dealershipId=<id>
 
 Get single vehicle by ID with dealership ownership verification.
 
@@ -356,7 +493,7 @@ curl -X GET "http://localhost:5000/api/vehicles/1?dealershipId=1" \
 
 ---
 
-### 9. POST /api/vehicles
+### 11. POST /api/vehicles
 
 Create new vehicle.
 
@@ -446,7 +583,7 @@ curl -X POST http://localhost:5000/api/vehicles \
 
 ---
 
-### 10. PUT /api/vehicles/:id?dealershipId=<id>
+### 12. PUT /api/vehicles/:id?dealershipId=<id>
 
 Update existing vehicle with dealership ownership verification.
 
@@ -509,7 +646,7 @@ curl -X PUT "http://localhost:5000/api/vehicles/1?dealershipId=1" \
 
 ---
 
-### 11. DELETE /api/vehicles/:id?dealershipId=<id>
+### 13. DELETE /api/vehicles/:id?dealershipId=<id>
 
 Delete vehicle with dealership ownership verification.
 
@@ -544,7 +681,7 @@ curl -X DELETE "http://localhost:5000/api/vehicles/1?dealershipId=1" \
 
 **SECURITY (SEC-001):** GET endpoint requires `dealershipId` query parameter to enforce multi-tenant data isolation.
 
-### 12. GET /api/leads?dealershipId=<id>
+### 14. GET /api/leads?dealershipId=<id>
 
 List customer enquiries for specific dealership (admin inbox), sorted newest first.
 
@@ -585,7 +722,7 @@ curl -X GET "http://localhost:5000/api/leads?dealershipId=1" \
 
 ---
 
-### 13. POST /api/leads
+### 15. POST /api/leads
 
 Submit customer enquiry (public endpoint, no auth required).
 
@@ -654,7 +791,7 @@ curl -X POST http://localhost:5000/api/leads \
 
 ## Upload Endpoints
 
-### 14. POST /api/upload
+### 16. POST /api/upload
 
 Upload image file to Cloudinary for vehicle photos or dealer logos.
 
