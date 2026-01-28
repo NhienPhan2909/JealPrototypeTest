@@ -13,6 +13,7 @@ import { AdminContext } from '../../context/AdminContext';
 import AdminHeader from '../../components/AdminHeader';
 import Unauthorized from '../../components/Unauthorized';
 import { hasPermission } from '../../utils/permissions';
+import apiRequest from '../../utils/api';
 
 function SalesRequests() {
   const { selectedDealership, user } = useContext(AdminContext);
@@ -53,15 +54,14 @@ function SalesRequests() {
     setError(null);
 
     try {
-      const response = await fetch(`/api/sales-requests?dealershipId=${selectedDealership.id}`, {
-        credentials: 'include'
-      });
+      const response = await apiRequest(`/api/sales-requests/dealership/${selectedDealership.id}`);
 
       if (!response.ok) {
         throw new Error('Failed to fetch sales requests');
       }
 
-      const data = await response.json();
+      const result = await response.json();
+      const data = result.data || result.Data || result;
       setSalesRequests(data);
     } catch (err) {
       setError(err.message);
@@ -186,10 +186,9 @@ function SalesRequests() {
    */
   const confirmDelete = async (requestId) => {
     try {
-      const response = await fetch(`/api/sales-requests/${requestId}?dealershipId=${selectedDealership.id}`, {
+      const response = await apiRequest(`/api/sales-requests/${requestId}?dealershipId=${selectedDealership.id}`, {
         method: 'DELETE',
-        credentials: 'include'
-      });
+        });
 
       if (!response.ok) {
         if (response.status === 404) {

@@ -22,6 +22,7 @@ import { AdminContext } from '../../context/AdminContext';
 import AdminHeader from '../../components/AdminHeader';
 import Unauthorized from '../../components/Unauthorized';
 import { hasPermission } from '../../utils/permissions';
+import apiRequest from '../../utils/api';
 
 /**
  * BlogList - Admin blog manager page component.
@@ -304,7 +305,7 @@ export default function BlogList() {
                       )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                      {blog.author_name}
+                      {blog.authorName}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full

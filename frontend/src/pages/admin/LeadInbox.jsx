@@ -14,6 +14,7 @@ import { AdminContext } from '../../context/AdminContext';
 import AdminHeader from '../../components/AdminHeader';
 import Unauthorized from '../../components/Unauthorized';
 import { hasPermission } from '../../utils/permissions';
+import apiRequest from '../../utils/api';
 
 function LeadInbox() {
   const { selectedDealership, user } = useContext(AdminContext);
@@ -66,18 +67,17 @@ function LeadInbox() {
     setError(null);
 
     try {
-      const response = await fetch(`/api/leads?dealershipId=${selectedDealership.id}`, {
-        credentials: 'include'
-      });
+      const response = await apiRequest(`/api/leads/dealership/${selectedDealership.id}`);
 
       if (!response.ok) {
         throw new Error('Failed to fetch leads');
       }
 
-      const data = await response.json();
+      const result = await response.json();
+      const data = result.data || result.Data || result;
       setLeads(data);
 
-      // Fetch vehicle titles for leads with vehicle_id
+      // Fetch vehicle titles for leads with vehicleId
       await fetchVehicleTitles(data);
     } catch (err) {
       setError(err.message);
@@ -87,23 +87,21 @@ function LeadInbox() {
   };
 
   /**
-   * Fetches vehicle titles for leads that have vehicle_id
+   * Fetches vehicle titles for leads that have vehicleId
    * @param {Array} leadsData - Array of lead objects
    */
   const fetchVehicleTitles = async (leadsData) => {
     const uniqueVehicleIds = [...new Set(
       leadsData
-        .filter(lead => lead.vehicle_id)
-        .map(lead => lead.vehicle_id)
+        .filter(lead => lead.vehicleId)
+        .map(lead => lead.vehicleId)
     )];
 
     const titleMap = {};
 
     for (const vehicleId of uniqueVehicleIds) {
       try {
-        const response = await fetch(`/api/vehicles/${vehicleId}?dealershipId=${selectedDealership.id}`, {
-          credentials: 'include'
-        });
+        const response = await apiRequest(`/api/vehicles/${vehicleId}?dealershipId=${selectedDealership.id}`);
 
         if (response.ok) {
           const vehicle = await response.json();
@@ -247,10 +245,9 @@ function LeadInbox() {
    */
   const confirmDelete = async (leadId) => {
     try {
-      const response = await fetch(`/api/leads/${leadId}?dealershipId=${selectedDealership.id}`, {
+      const response = await apiRequest(`/api/leads/${leadId}?dealershipId=${selectedDealership.id}`, {
         method: 'DELETE',
-        credentials: 'include'
-      });
+        });
 
       if (!response.ok) {
         if (response.status === 404) {
@@ -364,14 +361,14 @@ function LeadInbox() {
                       <td className="px-4 py-2 border">{lead.email}</td>
                       <td className="px-4 py-2 border">{decodeHtmlEntities(lead.phone)}</td>
                       <td className="px-4 py-2 border">
-                        {lead.vehicle_id ? (
+                        {lead.vehicleId ? (
                           <a
-                            href={`/inventory/${lead.vehicle_id}`}
+                            href={`/inventory/${lead.vehicleId}`}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="text-blue-600 underline hover:text-blue-800"
                           >
-                            {vehicleMap[lead.vehicle_id] || 'Loading...'}
+                            {vehicleMap[lead.vehicleId] || 'Loading...'}
                           </a>
                         ) : (
                           <span className="text-gray-500">General Enquiry</span>
@@ -419,7 +416,7 @@ function LeadInbox() {
                             Call
                           </a>
                           <a
-                            href={`mailto:${lead.email}?subject=${encodeURIComponent(`Re: Your enquiry about ${vehicleMap[lead.vehicle_id] || 'our dealership'}`)}`}
+                            href={`mailto:${lead.email}?subject=${encodeURIComponent(`Re: Your enquiry about ${vehicleMap[lead.vehicleId] || 'our dealership'}`)}`}
                             className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600 text-sm"
                           >
                             Email

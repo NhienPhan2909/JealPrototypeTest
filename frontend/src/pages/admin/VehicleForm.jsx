@@ -22,6 +22,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { AdminContext } from '../../context/AdminContext';
 import Unauthorized from '../../components/Unauthorized';
 import { hasPermission } from '../../utils/permissions';
+import apiRequest from '../../utils/api';
 
 /**
  * VehicleForm - Create and edit vehicle form component.
@@ -131,75 +132,39 @@ function VehicleForm() {
    *
    * @param {Event} e - File input change event
    */
-  const handlePhotoUpload = async (e) => {
-    const files = Array.from(e.target.files || []);
-    if (files.length === 0) return;
-
-    // Check if adding these files would exceed the limit
-    if (images.length + files.length > 10) {
-      setError(`Cannot upload ${files.length} files. Maximum total is 10 images (currently have ${images.length}).`);
-      e.target.value = '';
+  const handlePhotoUpload = () => {
+    if (images.length >= 10) {
+      setError('Maximum 10 images allowed.');
       return;
     }
 
-    // Validate file types
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg'];
-    const invalidFiles = files.filter(file => !allowedTypes.includes(file.type));
-    if (invalidFiles.length > 0) {
-      setError('Invalid file type. Please upload JPG, PNG, or WebP images only.');
-      e.target.value = '';
-      return;
-    }
-
-    // Validate file sizes (5MB max per file)
-    const maxSize = 5 * 1024 * 1024; // 5MB in bytes
-    const oversizedFiles = files.filter(file => file.size > maxSize);
-    if (oversizedFiles.length > 0) {
-      setError('One or more files are too large. Maximum size is 5MB per file.');
-      e.target.value = '';
-      return;
-    }
-
-    setUploading(true);
-    setError('');
-
-    try {
-      const uploadedUrls = [];
-
-      // Upload each file sequentially
-      for (const file of files) {
-        const formData = new FormData();
-        formData.append('image', file);
-
-        const response = await fetch('/api/upload', {
-          method: 'POST',
-          credentials: 'include',
-          body: formData
-        });
-
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.error || 'Upload failed');
+    if (window.cloudinary) {
+      window.cloudinary.openUploadWidget(
+        {
+          cloudName: import.meta.env.VITE_CLOUDINARY_CLOUD_NAME,
+          uploadPreset: import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET,
+          sources: ['local'],
+          multiple: true,
+          maxFiles: 10 - images.length, // Remaining slots
+          maxFileSize: 5000000, // 5MB
+          clientAllowedFormats: ['jpg', 'png', 'webp'],
+          folder: 'dealership-vehicles',
+          resourceType: 'image'
+        },
+        (error, result) => {
+          if (error) {
+            console.error('Cloudinary upload error:', error);
+            setError('Failed to upload images. Please try again.');
+            return;
+          }
+          if (result.event === 'success') {
+            setImages(prev => [...prev, result.info.secure_url]);
+          }
         }
-
-        const data = await response.json();
-        uploadedUrls.push(data.url);
-      }
-
-      // Add all uploaded URLs to images array
-      setImages(prev => [...prev, ...uploadedUrls]);
-      setSuccessMessage(`Successfully uploaded ${uploadedUrls.length} image${uploadedUrls.length > 1 ? 's' : ''}!`);
-
-      // Auto-clear success message after 3 seconds
-      setTimeout(() => {
-        setSuccessMessage('');
-      }, 3000);
-    } catch (err) {
-      console.error('Upload error:', err);
-      setError('Failed to upload images: ' + err.message);
-    } finally {
-      setUploading(false);
-      e.target.value = ''; // Reset input for future uploads
+      );
+    } else {
+      console.error('Cloudinary widget not loaded');
+      setError('Upload widget is not available. Please refresh the page.');
     }
   };
 
@@ -217,7 +182,7 @@ function VehicleForm() {
    * Sends POST request for create, PUT request for edit.
    *
    * SECURITY (SEC-001):
-   * - Create: Includes dealership_id in request body
+   * - Create: Includes dealershipId in request body
    * - Edit: Includes dealershipId query parameter for ownership validation
    *
    * @param {Object} formData - Form data from React Hook Form
@@ -247,22 +212,20 @@ function VehicleForm() {
 
       if (isEditMode) {
         // Edit mode: PUT request with dealershipId query parameter
-        response = await fetch(
+        response = await apiRequest(
           `/api/vehicles/${id}?dealershipId=${selectedDealership.id}`,
           {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
             body: JSON.stringify(vehicleData)
           }
         );
       } else {
-        // Create mode: POST request with dealership_id in body
-        vehicleData.dealership_id = selectedDealership.id;
-        response = await fetch('/api/vehicles', {
+        // Create mode: POST request with dealershipId in body
+        vehicleData.dealershipId = selectedDealership.id;
+        response = await apiRequest('/api/vehicles', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
           body: JSON.stringify(vehicleData)
         });
       }
@@ -588,3 +551,4 @@ function VehicleForm() {
 }
 
 export default VehicleForm;
+

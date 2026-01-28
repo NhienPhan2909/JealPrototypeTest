@@ -8,6 +8,7 @@ import { useContext, useState, useEffect } from 'react';
 import AdminHeader from '../../components/AdminHeader';
 import { AdminContext } from '../../context/AdminContext';
 import { hasPermission } from '../../utils/permissions';
+import apiRequest from '../../utils/api';
 
 /**
  * Dashboard - Admin dashboard landing page.
@@ -53,7 +54,8 @@ export default function Dashboard() {
         );
 
         if (vehiclesResponse.ok) {
-          const vehiclesData = await vehiclesResponse.json();
+          const result = await vehiclesResponse.json();
+          const vehiclesData = result.data || result.Data || result;
 
           // Calculate vehicle statistics
           const total = vehiclesData.length;
@@ -65,12 +67,13 @@ export default function Dashboard() {
 
         // Fetch leads for selected dealership
         const leadsResponse = await fetch(
-          `/api/leads?dealershipId=${selectedDealership.id}`,
+          `/api/leads/dealership/${selectedDealership.id}`,
           { credentials: 'include' }
         );
 
         if (leadsResponse.ok) {
-          const leadsData = await leadsResponse.json();
+          const result = await leadsResponse.json();
+          const leadsData = result.data || result.Data || result;
 
           // Calculate recent leads (last 7 days)
           const sevenDaysAgo = new Date();

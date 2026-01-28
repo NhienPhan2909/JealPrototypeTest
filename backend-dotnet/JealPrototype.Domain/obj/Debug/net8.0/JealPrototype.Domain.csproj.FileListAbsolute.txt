@@ -1,0 +1,12 @@
+D:\JealPrototypeTest\JealPrototypeTest\backend-dotnet\JealPrototype.Domain\bin\Debug\net8.0\JealPrototype.Domain.deps.json
+D:\JealPrototypeTest\JealPrototypeTest\backend-dotnet\JealPrototype.Domain\bin\Debug\net8.0\JealPrototype.Domain.dll
+D:\JealPrototypeTest\JealPrototypeTest\backend-dotnet\JealPrototype.Domain\bin\Debug\net8.0\JealPrototype.Domain.pdb
+D:\JealPrototypeTest\JealPrototypeTest\backend-dotnet\JealPrototype.Domain\obj\Debug\net8.0\JealPrototype.Domain.GeneratedMSBuildEditorConfig.editorconfig
+D:\JealPrototypeTest\JealPrototypeTest\backend-dotnet\JealPrototype.Domain\obj\Debug\net8.0\JealPrototype.Domain.AssemblyInfoInputs.cache
+D:\JealPrototypeTest\JealPrototypeTest\backend-dotnet\JealPrototype.Domain\obj\Debug\net8.0\JealPrototype.Domain.AssemblyInfo.cs
+D:\JealPrototypeTest\JealPrototypeTest\backend-dotnet\JealPrototype.Domain\obj\Debug\net8.0\JealPrototype.Domain.csproj.CoreCompileInputs.cache
+D:\JealPrototypeTest\JealPrototypeTest\backend-dotnet\JealPrototype.Domain\obj\Debug\net8.0\JealPrototype.Domain.sourcelink.json
+D:\JealPrototypeTest\JealPrototypeTest\backend-dotnet\JealPrototype.Domain\obj\Debug\net8.0\JealPrototype.Domain.dll
+D:\JealPrototypeTest\JealPrototypeTest\backend-dotnet\JealPrototype.Domain\obj\Debug\net8.0\refint\JealPrototype.Domain.dll
+D:\JealPrototypeTest\JealPrototypeTest\backend-dotnet\JealPrototype.Domain\obj\Debug\net8.0\JealPrototype.Domain.pdb
+D:\JealPrototypeTest\JealPrototypeTest\backend-dotnet\JealPrototype.Domain\obj\Debug\net8.0\ref\JealPrototype.Domain.dll

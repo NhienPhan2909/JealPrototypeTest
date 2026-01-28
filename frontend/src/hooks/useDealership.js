@@ -4,6 +4,7 @@
  */
 
 import { useState, useEffect } from 'react';
+import apiRequest from '../utils/api';
 
 /**
  * useDealership - Custom hook to fetch and cache dealership data.
@@ -30,14 +31,14 @@ function useDealership(dealershipId) {
      */
     async function fetchDealership() {
       try {
-        const response = await fetch(`/api/dealers/${dealershipId}`);
+        const response = await apiRequest(`/api/dealers/${dealershipId}`);
 
         if (!response.ok) {
           throw new Error('Failed to fetch dealership data');
         }
 
-        const data = await response.json();
-        setDealership(data);
+        const result = await response.json();
+        setDealership(result.data || result.Data || result);
         setLoading(false);
       } catch (err) {
         console.error('Failed to load dealership:', err);

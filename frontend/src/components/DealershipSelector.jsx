@@ -5,6 +5,7 @@
 
 import { useState, useEffect } from 'react';
 import { useDealershipContext } from '../context/DealershipContext';
+import apiRequest from '../utils/api';
 
 function DealershipSelector() {
   const { currentDealershipId, setCurrentDealershipId } = useDealershipContext();
@@ -14,7 +15,7 @@ function DealershipSelector() {
   useEffect(() => {
     async function fetchDealerships() {
       try {
-        const response = await fetch('/api/dealers');
+        const response = await apiRequest('/api/dealers');
         if (!response.ok) {
           throw new Error('Failed to fetch dealerships');
         }

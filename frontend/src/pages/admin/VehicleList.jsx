@@ -22,6 +22,7 @@ import { AdminContext } from '../../context/AdminContext';
 import AdminHeader from '../../components/AdminHeader';
 import Unauthorized from '../../components/Unauthorized';
 import { hasPermission } from '../../utils/permissions';
+import apiRequest from '../../utils/api';
 
 /**
  * VehicleList - Admin vehicle manager page component.
@@ -73,7 +74,8 @@ export default function VehicleList() {
           throw new Error('Failed to fetch vehicles');
         }
 
-        const data = await response.json();
+        const result = await response.json();
+        const data = result.data || result.Data || result;
         setVehicles(data);
       } catch (err) {
         console.error('Error fetching vehicles:', err);
@@ -145,11 +147,10 @@ export default function VehicleList() {
    */
   const confirmDelete = async (vehicleId) => {
     try {
-      const response = await fetch(
+      const response = await apiRequest(
         `/api/vehicles/${vehicleId}?dealershipId=${selectedDealership.id}`,
         {
-          method: 'DELETE',
-          credentials: 'include'
+          method: 'DELETE'
         }
       );
 

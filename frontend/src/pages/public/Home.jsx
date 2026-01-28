@@ -49,9 +49,9 @@ function Home() {
   return (
     <>
       {/* Hero Section */}
-      {dealership?.hero_type === 'carousel' && dealership?.hero_carousel_images?.length > 0 ? (
+      {dealership?.heroType === 'carousel' && dealership?.heroCarouselImages?.length > 0 ? (
         // Carousel Hero
-        <HeroCarousel images={dealership.hero_carousel_images}>
+        <HeroCarousel images={dealership.heroCarouselImages}>
           <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 drop-shadow-lg">
             {dealership?.name || 'Welcome'}
           </h1>
@@ -70,7 +70,7 @@ function Home() {
             Browse Inventory
           </Link>
         </HeroCarousel>
-      ) : dealership?.hero_type === 'video' && dealership?.hero_video_url ? (
+      ) : dealership?.heroType === 'video' && dealership?.heroVideoUrl ? (
         // Video Hero
         <div className="text-white py-12 md:py-20 relative overflow-hidden">
           {/* Video Background */}
@@ -81,7 +81,7 @@ function Home() {
             playsInline
             className="absolute inset-0 w-full h-full object-cover"
           >
-            <source src={dealership.hero_video_url} type="video/mp4" />
+            <source src={dealership.heroVideoUrl} type="video/mp4" />
             Your browser does not support the video tag.
           </video>
 
@@ -114,9 +114,9 @@ function Home() {
         <div
           className="text-white py-12 md:py-20 relative bg-gradient-to-r from-blue-500 to-blue-700"
           style={
-            dealership?.hero_background_image
+            dealership?.heroBackgroundImage
               ? {
-                  backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url(${dealership.hero_background_image})`,
+                  backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url(${dealership.heroBackgroundImage})`,
                   backgroundSize: 'contain',
                   backgroundPosition: 'center',
                   backgroundRepeat: 'no-repeat'
@@ -167,10 +167,10 @@ function Home() {
 
         {/* Promotional Panels for Finance and Warranty */}
         <PromotionalPanels
-          financeImage={dealership?.finance_promo_image}
-          financeText={dealership?.finance_promo_text}
-          warrantyImage={dealership?.warranty_promo_image}
-          warrantyText={dealership?.warranty_promo_text}
+          financeImage={dealership?.financePromoImage}
+          financeText={dealership?.financePromoText}
+          warrantyImage={dealership?.warrantyPromoImage}
+          warrantyText={dealership?.warrantyPromoText}
         />
       </div>
     </>

@@ -49,9 +49,9 @@ function About() {
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
       {/* Logo */}
-      {dealership?.logo_url && (
+      {dealership?.logoUrl && (
         <img
-          src={dealership.logo_url}
+          src={dealership.logoUrl}
           alt={`${dealership.name} Logo`}
           className="mx-auto mb-6 w-48 md:max-w-xs object-contain"
         />

@@ -1,12 +1,13 @@
 /**
  * @fileoverview Dealership Management Page - Admin interface for creating new dealerships.
- * Only accessible to System Administrators (user_type: 'admin').
+ * Only accessible to System Administrators (userType: 'admin').
  */
 
 import { useState, useEffect, useContext } from 'react';
 import { AdminContext } from '../../context/AdminContext';
 import AdminHeader from '../../components/AdminHeader';
 import { isAdmin } from '../../utils/permissions';
+import apiRequest from '../../utils/api';
 
 export default function DealershipManagement() {
   const { user } = useContext(AdminContext);
@@ -24,10 +25,10 @@ export default function DealershipManagement() {
     address: '',
     phone: '',
     email: '',
-    logo_url: '',
+    logoUrl: '',
     hours: '',
     about: '',
-    website_url: ''
+    websiteUrl: ''
   });
 
   useEffect(() => {
@@ -36,16 +37,18 @@ export default function DealershipManagement() {
 
   const fetchDealerships = async () => {
     try {
-      const response = await fetch('/api/dealers', { credentials: 'include' });
+      const response = await apiRequest('/api/dealers');
       if (response.ok) {
-        const data = await response.json();
-        setDealerships(data);
+        const result = await response.json();
+        const data = result.data || result.Data || result;
+        setDealerships(Array.isArray(data) ? data : []);
       } else {
         setError('Failed to load dealerships');
       }
     } catch (err) {
       console.error('Fetch dealerships error:', err);
       setError('Failed to load dealerships');
+      setDealerships([]);
     } finally {
       setIsLoading(false);
     }
@@ -106,10 +109,9 @@ export default function DealershipManagement() {
     setSuccessMessage('');
 
     try {
-      const response = await fetch(`/api/dealers/${dealershipId}`, {
+      const response = await apiRequest(`/api/dealers/${dealershipId}`, {
         method: 'DELETE',
-        credentials: 'include'
-      });
+        });
 
       if (response.ok) {
         const data = await response.json();
@@ -131,10 +133,10 @@ export default function DealershipManagement() {
       address: '',
       phone: '',
       email: '',
-      logo_url: '',
+      logoUrl: '',
       hours: '',
       about: '',
-      website_url: ''
+      websiteUrl: ''
     });
   };
 
@@ -298,8 +300,8 @@ export default function DealershipManagement() {
                     </label>
                     <input
                       type="text"
-                      name="website_url"
-                      value={formData.website_url}
+                      name="websiteUrl"
+                      value={formData.websiteUrl}
                       onChange={handleInputChange}
                       className="w-full border border-gray-300 rounded px-3 py-2"
                       placeholder="e.g., acme-auto.com"
@@ -317,8 +319,8 @@ export default function DealershipManagement() {
                     </label>
                     <input
                       type="url"
-                      name="logo_url"
-                      value={formData.logo_url}
+                      name="logoUrl"
+                      value={formData.logoUrl}
                       onChange={handleInputChange}
                       className="w-full border border-gray-300 rounded px-3 py-2"
                       placeholder="https://example.com/logo.png"
@@ -452,7 +454,7 @@ export default function DealershipManagement() {
                           {dealership.name}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                          {dealership.website_url || <span className="text-gray-400 italic">Not set</span>}
+                          {dealership.websiteUrl || <span className="text-gray-400 italic">Not set</span>}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                           {dealership.email}

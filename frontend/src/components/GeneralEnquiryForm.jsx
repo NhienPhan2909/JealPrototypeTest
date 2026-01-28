@@ -9,6 +9,7 @@
 import { useState, useRef } from 'react';
 import { useDealershipContext } from '../context/DealershipContext';
 import ReCaptcha from './ReCaptcha';
+import apiRequest from '../utils/api';
 
 /**
  * GeneralEnquiryForm - Homepage general enquiry form.
@@ -169,7 +170,7 @@ function GeneralEnquiryForm() {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          dealership_id: currentDealershipId,
+          dealershipId: currentDealershipId,
           name: formData.name,
           email: formData.email,
           phone: formData.phone,

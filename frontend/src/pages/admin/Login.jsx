@@ -6,6 +6,7 @@
 import { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AdminContext } from '../../context/AdminContext';
+import apiRequest from '../../utils/api';
 
 /**
  * Login - Login page component for all user types.
@@ -36,23 +37,25 @@ export default function Login() {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch('/api/auth/login', {
+      const response = await apiRequest('/api/auth/login', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include', // Include session cookie
         body: JSON.stringify({ username, password })
       });
 
-      const data = await response.json();
+      const result = await response.json();
+      const data = result.data || result.Data || result;
 
       if (response.ok) {
-        // Success - update auth state and redirect to admin dashboard
+        // Success - store token and update auth state
+        if (data.token) {
+          localStorage.setItem('jwt_token', data.token);
+        }
         setIsAuthenticated(true);
         setUser(data.user);
         navigate('/admin');
       } else {
         // Error - display error message
-        setError(data.error || 'Invalid username or password');
+        setError(result.message || result.Message || 'Invalid username or password');
       }
     } catch (err) {
       console.error('Login error:', err);

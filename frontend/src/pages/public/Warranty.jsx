@@ -56,7 +56,7 @@ function Warranty() {
       <div className="card mb-6">
         <h2 className="text-2xl font-semibold mb-4">Warranty</h2>
         <p className="whitespace-pre-line text-gray-700 leading-relaxed">
-          {dealership?.warranty_policy || `Contact us to learn about our warranty coverage. Call ${dealership?.phone} or submit an enquiry.`}
+          {dealership?.warrantyPolicy || `Contact us to learn about our warranty coverage. Call ${dealership?.phone} or submit an enquiry.`}
         </p>
       </div>
 

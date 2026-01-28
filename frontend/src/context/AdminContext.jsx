@@ -8,6 +8,7 @@
 
 /* eslint-disable react-refresh/only-export-components */
 import React, { createContext, useState, useEffect } from 'react';
+import apiRequest from '../utils/api';
 
 /**
  * AdminContext - React context for authentication and user management.
@@ -62,11 +63,11 @@ export function AdminProvider({ children }) {
    * This enables dynamic theming in the admin panel.
    */
   useEffect(() => {
-    if (selectedDealership?.theme_color) {
-      document.documentElement.style.setProperty('--theme-color', selectedDealership.theme_color);
+    if (selectedDealership?.themeColor) {
+      document.documentElement.style.setProperty('--theme-color', selectedDealership.themeColor);
 
       // Calculate lighter and darker shades for hover states
-      const hex = selectedDealership.theme_color.replace('#', '');
+      const hex = selectedDealership.themeColor.replace('#', '');
       const r = parseInt(hex.substr(0, 2), 16);
       const g = parseInt(hex.substr(2, 2), 16);
       const b = parseInt(hex.substr(4, 2), 16);
@@ -94,11 +95,11 @@ export function AdminProvider({ children }) {
     }
 
     // Set secondary theme color and its variations
-    if (selectedDealership?.secondary_theme_color) {
-      document.documentElement.style.setProperty('--secondary-theme-color', selectedDealership.secondary_theme_color);
+    if (selectedDealership?.secondaryThemeColor) {
+      document.documentElement.style.setProperty('--secondary-theme-color', selectedDealership.secondaryThemeColor);
 
       // Calculate lighter and darker shades for secondary color
-      const hex = selectedDealership.secondary_theme_color.replace('#', '');
+      const hex = selectedDealership.secondaryThemeColor.replace('#', '');
       const r = parseInt(hex.substr(0, 2), 16);
       const g = parseInt(hex.substr(2, 2), 16);
       const b = parseInt(hex.substr(4, 2), 16);
@@ -124,7 +125,7 @@ export function AdminProvider({ children }) {
       document.documentElement.style.setProperty('--secondary-theme-color-dark', '#E5E5E5');
       document.documentElement.style.setProperty('--secondary-theme-color-light', '#FFFFFF');
     }
-  }, [selectedDealership?.theme_color, selectedDealership?.secondary_theme_color]);
+  }, [selectedDealership?.themeColor, selectedDealership?.secondaryThemeColor]);
 
   /**
    * Check authentication status on component mount.
@@ -133,21 +134,25 @@ export function AdminProvider({ children }) {
   useEffect(() => {
     const checkAuthStatus = async () => {
       try {
-        const response = await fetch('/api/auth/me', {
-          credentials: 'include' // Include session cookie
-        });
+        const response = await apiRequest('/api/auth/me');
+        
+        // Handle 401 Unauthorized (not logged in) - this is expected for public users
+        if (response.status === 401) {
+          setIsAuthenticated(false);
+          setUser(null);
+          return;
+        }
+        
         const data = await response.json();
         setIsAuthenticated(data.authenticated);
         setUser(data.user || null);
         
         // For non-admin users, auto-select their dealership
-        if (data.authenticated && data.user && data.user.user_type !== 'admin' && data.user.dealership_id) {
+        if (data.authenticated && data.user && data.user.userType !== 'admin' && data.user.dealershipId) {
           // Fetch dealership info if not already selected
-          if (!selectedDealership || selectedDealership.id !== data.user.dealership_id) {
+          if (!selectedDealership || selectedDealership.id !== data.user.dealershipId) {
             try {
-              const dealershipRes = await fetch(`/api/dealers/${data.user.dealership_id}`, {
-                credentials: 'include'
-              });
+              const dealershipRes = await apiRequest(`/api/dealers/${data.user.dealershipId}`);
               if (dealershipRes.ok) {
                 const dealershipData = await dealershipRes.json();
                 setSelectedDealership(dealershipData);

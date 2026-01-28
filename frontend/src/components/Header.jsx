@@ -36,7 +36,7 @@ function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // Get theme color from dealership data, default to blue if not set
-  const themeColor = dealership?.theme_color || '#3B82F6';
+  const themeColor = dealership?.themeColor || '#3B82F6';
 
   // Get navigation config with validation and fallback to defaults
   const navigationConfig = getValidatedNavigation(dealership?.navigation_config);
@@ -72,9 +72,9 @@ function Header() {
         <div className="flex flex-col md:flex-row justify-center items-center gap-4">
           {/* Dealership branding */}
           <Link to="/" className="flex items-center gap-2 md:gap-4 hover:opacity-80 transition">
-            {dealership?.logo_url && (
+            {dealership?.logoUrl && (
               <img
-                src={dealership.logo_url}
+                src={dealership.logoUrl}
                 alt={`${dealership.name} logo`}
                 className="h-10 md:h-12 object-contain"
               />

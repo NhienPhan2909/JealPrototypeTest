@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import ImageGallery from '../../components/ImageGallery';
 import EnquiryForm from '../../components/EnquiryForm';
 import { useDealershipContext } from '../../context/DealershipContext';
+import apiRequest from '../../utils/api';
 
 /**
  * VehicleDetail - Public vehicle detail page with image gallery and specifications.
@@ -50,7 +51,7 @@ function VehicleDetail() {
         setError(null);
 
         // IMPORTANT: Include dealershipId query parameter (SEC-001 requirement)
-        const response = await fetch(`/api/vehicles/${vehicleId}?dealershipId=${currentDealershipId}`);
+        const response = await apiRequest(`/api/vehicles/${vehicleId}?dealershipId=${currentDealershipId}`);
 
         // Handle 404 - vehicle not found or belongs to different dealership
         if (response.status === 404) {
@@ -64,7 +65,8 @@ function VehicleDetail() {
           throw new Error('Failed to fetch vehicle');
         }
 
-        const data = await response.json();
+        const result = await response.json();
+        const data = result.data || result.Data || result;
         setVehicle(data);
         setLoading(false);
       } catch (err) {
@@ -80,9 +82,10 @@ function VehicleDetail() {
      */
     const fetchDealership = async () => {
       try {
-        const response = await fetch(`/api/dealers/${currentDealershipId}`);
+        const response = await apiRequest(`/api/dealers/${currentDealershipId}`);
         if (response.ok) {
-          const data = await response.json();
+          const result = await response.json();
+          const data = result.data || result.Data || result;
           setDealership(data);
         }
       } catch (err) {

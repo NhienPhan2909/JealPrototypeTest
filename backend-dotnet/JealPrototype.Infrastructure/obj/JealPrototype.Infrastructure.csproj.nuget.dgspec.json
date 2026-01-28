@@ -1,0 +1,239 @@
+{
+  "format": 1,
+  "restore": {
+    "D:\\JealPrototypeTest\\JealPrototypeTest\\backend-dotnet\\JealPrototype.Infrastructure\\JealPrototype.Infrastructure.csproj": {}
+  },
+  "projects": {
+    "D:\\JealPrototypeTest\\JealPrototypeTest\\backend-dotnet\\JealPrototype.Application\\JealPrototype.Application.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "D:\\JealPrototypeTest\\JealPrototypeTest\\backend-dotnet\\JealPrototype.Application\\JealPrototype.Application.csproj",
+        "projectName": "JealPrototype.Application",
+        "projectPath": "D:\\JealPrototypeTest\\JealPrototypeTest\\backend-dotnet\\JealPrototype.Application\\JealPrototype.Application.csproj",
+        "packagesPath": "C:\\Users\\Hoang\\.nuget\\packages\\",
+        "outputPath": "D:\\JealPrototypeTest\\JealPrototypeTest\\backend-dotnet\\JealPrototype.Application\\obj\\",
+        "projectStyle": "PackageReference",
+        "configFilePaths": [
+          "C:\\Users\\Hoang\\AppData\\Roaming\\NuGet\\NuGet.Config"
+        ],
+        "originalTargetFrameworks": [
+          "net8.0"
+        ],
+        "sources": {
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net8.0": {
+            "targetAlias": "net8.0",
+            "projectReferences": {
+              "D:\\JealPrototypeTest\\JealPrototypeTest\\backend-dotnet\\JealPrototype.Domain\\JealPrototype.Domain.csproj": {
+                "projectPath": "D:\\JealPrototypeTest\\JealPrototypeTest\\backend-dotnet\\JealPrototype.Domain\\JealPrototype.Domain.csproj"
+              }
+            }
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        }
+      },
+      "frameworks": {
+        "net8.0": {
+          "targetAlias": "net8.0",
+          "dependencies": {
+            "AutoMapper": {
+              "target": "Package",
+              "version": "[13.0.1, )"
+            },
+            "FluentValidation": {
+              "target": "Package",
+              "version": "[11.9.0, )"
+            },
+            "MediatR": {
+              "target": "Package",
+              "version": "[14.0.0, )"
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.417/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    },
+    "D:\\JealPrototypeTest\\JealPrototypeTest\\backend-dotnet\\JealPrototype.Domain\\JealPrototype.Domain.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "D:\\JealPrototypeTest\\JealPrototypeTest\\backend-dotnet\\JealPrototype.Domain\\JealPrototype.Domain.csproj",
+        "projectName": "JealPrototype.Domain",
+        "projectPath": "D:\\JealPrototypeTest\\JealPrototypeTest\\backend-dotnet\\JealPrototype.Domain\\JealPrototype.Domain.csproj",
+        "packagesPath": "C:\\Users\\Hoang\\.nuget\\packages\\",
+        "outputPath": "D:\\JealPrototypeTest\\JealPrototypeTest\\backend-dotnet\\JealPrototype.Domain\\obj\\",
+        "projectStyle": "PackageReference",
+        "configFilePaths": [
+          "C:\\Users\\Hoang\\AppData\\Roaming\\NuGet\\NuGet.Config"
+        ],
+        "originalTargetFrameworks": [
+          "net8.0"
+        ],
+        "sources": {
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net8.0": {
+            "targetAlias": "net8.0",
+            "projectReferences": {}
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        }
+      },
+      "frameworks": {
+        "net8.0": {
+          "targetAlias": "net8.0",
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.417/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    },
+    "D:\\JealPrototypeTest\\JealPrototypeTest\\backend-dotnet\\JealPrototype.Infrastructure\\JealPrototype.Infrastructure.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "D:\\JealPrototypeTest\\JealPrototypeTest\\backend-dotnet\\JealPrototype.Infrastructure\\JealPrototype.Infrastructure.csproj",
+        "projectName": "JealPrototype.Infrastructure",
+        "projectPath": "D:\\JealPrototypeTest\\JealPrototypeTest\\backend-dotnet\\JealPrototype.Infrastructure\\JealPrototype.Infrastructure.csproj",
+        "packagesPath": "C:\\Users\\Hoang\\.nuget\\packages\\",
+        "outputPath": "D:\\JealPrototypeTest\\JealPrototypeTest\\backend-dotnet\\JealPrototype.Infrastructure\\obj\\",
+        "projectStyle": "PackageReference",
+        "configFilePaths": [
+          "C:\\Users\\Hoang\\AppData\\Roaming\\NuGet\\NuGet.Config"
+        ],
+        "originalTargetFrameworks": [
+          "net8.0"
+        ],
+        "sources": {
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net8.0": {
+            "targetAlias": "net8.0",
+            "projectReferences": {
+              "D:\\JealPrototypeTest\\JealPrototypeTest\\backend-dotnet\\JealPrototype.Application\\JealPrototype.Application.csproj": {
+                "projectPath": "D:\\JealPrototypeTest\\JealPrototypeTest\\backend-dotnet\\JealPrototype.Application\\JealPrototype.Application.csproj"
+              },
+              "D:\\JealPrototypeTest\\JealPrototypeTest\\backend-dotnet\\JealPrototype.Domain\\JealPrototype.Domain.csproj": {
+                "projectPath": "D:\\JealPrototypeTest\\JealPrototypeTest\\backend-dotnet\\JealPrototype.Domain\\JealPrototype.Domain.csproj"
+              }
+            }
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        }
+      },
+      "frameworks": {
+        "net8.0": {
+          "targetAlias": "net8.0",
+          "dependencies": {
+            "BCrypt.Net-Next": {
+              "target": "Package",
+              "version": "[4.0.3, )"
+            },
+            "CloudinaryDotNet": {
+              "target": "Package",
+              "version": "[1.28.0, )"
+            },
+            "MailKit": {
+              "target": "Package",
+              "version": "[4.3.0, )"
+            },
+            "Microsoft.EntityFrameworkCore.Design": {
+              "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[8.0.11, )"
+            },
+            "Microsoft.Extensions.Http": {
+              "target": "Package",
+              "version": "[10.0.2, )"
+            },
+            "Npgsql.EntityFrameworkCore.PostgreSQL": {
+              "target": "Package",
+              "version": "[8.0.11, )"
+            },
+            "System.IdentityModel.Tokens.Jwt": {
+              "target": "Package",
+              "version": "[7.1.2, )"
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.417/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    }
+  }
+}

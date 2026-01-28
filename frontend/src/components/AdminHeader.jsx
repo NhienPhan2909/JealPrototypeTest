@@ -9,6 +9,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { AdminContext } from '../context/AdminContext';
 import { useDealershipContext } from '../context/DealershipContext';
 import { hasPermission, canManageUsers, isAdmin } from '../utils/permissions';
+import apiRequest from '../utils/api';
 
 /**
  * AdminHeader - Admin panel header component.
@@ -35,13 +36,14 @@ export default function AdminHeader() {
     const fetchDealerships = async () => {
       try {
         // Admin users need to fetch all dealerships
-        if (user?.user_type === 'admin') {
-          const response = await fetch('/api/dealers', {
-            credentials: 'include' // Include session cookie
+        if (user?.userType === 'admin') {
+          const response = await apiRequest('/api/dealers', {
+            // Include session cookie
           });
 
           if (response.ok) {
-            const data = await response.json();
+            const result = await response.json();
+            const data = result.data || result.Data || result;
             setDealerships(data);
           } else {
             console.error('Failed to fetch dealerships');
@@ -61,7 +63,7 @@ export default function AdminHeader() {
    * Triggers when dealerships array is populated.
    */
   useEffect(() => {
-    if (dealerships.length > 0 && user?.user_type === 'admin') {
+    if (dealerships.length > 0 && user?.userType === 'admin') {
       if (selectedDealership) {
         // Validate that the persisted dealership still exists
         const dealershipExists = dealerships.some(d => d.id === selectedDealership.id);
@@ -101,13 +103,15 @@ export default function AdminHeader() {
     setIsLoggingOut(true);
 
     try {
-      const response = await fetch('/api/auth/logout', {
+      const response = await apiRequest('/api/auth/logout', {
         method: 'POST',
-        credentials: 'include' // Include session cookie
+        // Include session cookie
       });
 
       if (response.ok) {
-        // Clear authentication state and redirect to login
+        // Clear JWT token and authentication state, then redirect to login
+        localStorage.removeItem('jwt_token');
+        localStorage.removeItem('selectedDealership');
         setIsAuthenticated(false);
         navigate('/admin/login');
       } else {
@@ -152,13 +156,13 @@ export default function AdminHeader() {
             Admin Panel
             {user && (
               <span className="text-sm font-normal text-gray-300 ml-2">
-                ({user.full_name})
+                ({user.fullName})
               </span>
             )}
           </h1>
 
           {/* Dealership Selector - Only show for admin users */}
-          {user?.user_type === 'admin' && (
+          {user?.userType === 'admin' && (
             <div className="flex-shrink-0">
               <label htmlFor="dealership-select" className="block text-sm mb-1">
                 Select Dealership:
@@ -184,7 +188,7 @@ export default function AdminHeader() {
           )}
 
           {/* Dealership Display - For owner/staff (non-selectable) */}
-          {user?.user_type !== 'admin' && selectedDealership && (
+          {user?.userType !== 'admin' && selectedDealership && (
             <div className="flex-shrink-0">
               <p className="text-sm text-gray-300">
                 Dealership: <span className="font-semibold text-lg">{selectedDealership.name}</span>

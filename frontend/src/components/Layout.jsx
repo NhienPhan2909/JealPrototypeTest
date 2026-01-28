@@ -29,11 +29,11 @@ function Layout() {
 
   // Set CSS custom properties for theme color
   useEffect(() => {
-    if (dealership?.theme_color) {
-      document.documentElement.style.setProperty('--theme-color', dealership.theme_color);
+    if (dealership?.themeColor) {
+      document.documentElement.style.setProperty('--theme-color', dealership.themeColor);
 
       // Calculate lighter and darker shades for hover states
-      const hex = dealership.theme_color.replace('#', '');
+      const hex = dealership.themeColor.replace('#', '');
       const r = parseInt(hex.substr(0, 2), 16);
       const g = parseInt(hex.substr(2, 2), 16);
       const b = parseInt(hex.substr(4, 2), 16);
@@ -56,11 +56,11 @@ function Layout() {
     }
 
     // Set secondary theme color and its variations
-    if (dealership?.secondary_theme_color) {
-      document.documentElement.style.setProperty('--secondary-theme-color', dealership.secondary_theme_color);
+    if (dealership?.secondaryThemeColor) {
+      document.documentElement.style.setProperty('--secondary-theme-color', dealership.secondaryThemeColor);
 
       // Calculate lighter and darker shades for secondary color
-      const hex = dealership.secondary_theme_color.replace('#', '');
+      const hex = dealership.secondaryThemeColor.replace('#', '');
       const r = parseInt(hex.substr(0, 2), 16);
       const g = parseInt(hex.substr(2, 2), 16);
       const b = parseInt(hex.substr(4, 2), 16);
@@ -88,9 +88,9 @@ function Layout() {
     }
 
     // Set body background color
-    if (dealership?.body_background_color) {
-      document.documentElement.style.setProperty('--body-background-color', dealership.body_background_color);
-      document.body.style.backgroundColor = dealership.body_background_color;
+    if (dealership?.bodyBackgroundColor) {
+      document.documentElement.style.setProperty('--body-background-color', dealership.bodyBackgroundColor);
+      document.body.style.backgroundColor = dealership.bodyBackgroundColor;
     } else {
       // Set default background color if not specified
       document.documentElement.style.setProperty('--body-background-color', '#FFFFFF');
@@ -98,7 +98,7 @@ function Layout() {
     }
 
     // Set font family
-    if (dealership?.font_family) {
+    if (dealership?.fontFamily) {
       const fontMapping = {
         system: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif',
         arial: 'Arial, Helvetica, sans-serif',
@@ -112,10 +112,10 @@ function Layout() {
         palatino: '"Palatino Linotype", "Book Antiqua", Palatino, serif'
       };
 
-      const fontFamily = fontMapping[dealership.font_family] || fontMapping.system;
+      const fontFamily = fontMapping[dealership.fontFamily] || fontMapping.system;
       document.body.style.fontFamily = fontFamily;
     }
-  }, [dealership?.theme_color, dealership?.secondary_theme_color, dealership?.body_background_color, dealership?.font_family]);
+  }, [dealership?.themeColor, dealership?.secondaryThemeColor, dealership?.bodyBackgroundColor, dealership?.fontFamily]);
 
   return (
     <div className="min-h-screen flex flex-col">

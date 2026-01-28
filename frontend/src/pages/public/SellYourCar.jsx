@@ -9,6 +9,7 @@ import { useState, useRef } from 'react';
 import { useDealershipContext } from '../../context/DealershipContext';
 import useDealership from '../../hooks/useDealership';
 import ReCaptcha from '../../components/ReCaptcha';
+import apiRequest from '../../utils/api';
 
 /**
  * SellYourCar - Form for customers to sell their vehicles to the dealership.

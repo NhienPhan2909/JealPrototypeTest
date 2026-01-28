@@ -56,7 +56,7 @@ function Finance() {
       <div className="card mb-6">
         <h2 className="text-2xl font-semibold mb-4">Financing</h2>
         <p className="whitespace-pre-line text-gray-700 leading-relaxed">
-          {dealership?.finance_policy || `Contact us to learn about our financing options. Call ${dealership?.phone} or submit an enquiry.`}
+          {dealership?.financePolicy || `Contact us to learn about our financing options. Call ${dealership?.phone} or submit an enquiry.`}
         </p>
       </div>
 

@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import ReCaptcha from './ReCaptcha';
+import apiRequest from '../utils/api';
 
 /**
  * EnquiryForm - Customer enquiry form for vehicle detail page.
@@ -129,8 +130,8 @@ function EnquiryForm({ vehicleId, dealershipId, vehicleTitle, dealershipPhone })
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          dealership_id: dealershipId,
-          vehicle_id: vehicleId,
+          dealershipId: dealershipId,
+          vehicleId: vehicleId,
           name,
           email,
           phone,

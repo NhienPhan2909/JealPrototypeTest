@@ -1,0 +1,16 @@
+D:\JealPrototypeTest\JealPrototypeTest\backend-dotnet\JealPrototype.Application\bin\Debug\net8.0\JealPrototype.Application.deps.json
+D:\JealPrototypeTest\JealPrototypeTest\backend-dotnet\JealPrototype.Application\bin\Debug\net8.0\JealPrototype.Application.dll
+D:\JealPrototypeTest\JealPrototypeTest\backend-dotnet\JealPrototype.Application\bin\Debug\net8.0\JealPrototype.Application.pdb
+D:\JealPrototypeTest\JealPrototypeTest\backend-dotnet\JealPrototype.Application\bin\Debug\net8.0\JealPrototype.Domain.dll
+D:\JealPrototypeTest\JealPrototypeTest\backend-dotnet\JealPrototype.Application\bin\Debug\net8.0\JealPrototype.Domain.pdb
+D:\JealPrototypeTest\JealPrototypeTest\backend-dotnet\JealPrototype.Application\obj\Debug\net8.0\JealPrototype.Application.csproj.AssemblyReference.cache
+D:\JealPrototypeTest\JealPrototypeTest\backend-dotnet\JealPrototype.Application\obj\Debug\net8.0\JealPrototype.Application.GeneratedMSBuildEditorConfig.editorconfig
+D:\JealPrototypeTest\JealPrototypeTest\backend-dotnet\JealPrototype.Application\obj\Debug\net8.0\JealPrototype.Application.AssemblyInfoInputs.cache
+D:\JealPrototypeTest\JealPrototypeTest\backend-dotnet\JealPrototype.Application\obj\Debug\net8.0\JealPrototype.Application.AssemblyInfo.cs
+D:\JealPrototypeTest\JealPrototypeTest\backend-dotnet\JealPrototype.Application\obj\Debug\net8.0\JealPrototype.Application.csproj.CoreCompileInputs.cache
+D:\JealPrototypeTest\JealPrototypeTest\backend-dotnet\JealPrototype.Application\obj\Debug\net8.0\JealPrototype.Application.sourcelink.json
+D:\JealPrototypeTest\JealPrototypeTest\backend-dotnet\JealPrototype.Application\obj\Debug\net8.0\JealProt.824E19A2.Up2Date
+D:\JealPrototypeTest\JealPrototypeTest\backend-dotnet\JealPrototype.Application\obj\Debug\net8.0\JealPrototype.Application.dll
+D:\JealPrototypeTest\JealPrototypeTest\backend-dotnet\JealPrototype.Application\obj\Debug\net8.0\refint\JealPrototype.Application.dll
+D:\JealPrototypeTest\JealPrototypeTest\backend-dotnet\JealPrototype.Application\obj\Debug\net8.0\JealPrototype.Application.pdb
+D:\JealPrototypeTest\JealPrototypeTest\backend-dotnet\JealPrototype.Application\obj\Debug\net8.0\ref\JealPrototype.Application.dll

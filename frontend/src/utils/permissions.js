@@ -16,12 +16,12 @@ export function hasPermission(user, permission) {
   if (!user) return false;
 
   // Admin and Owner have all permissions
-  if (user.user_type === 'admin' || user.user_type === 'dealership_owner') {
+  if (user.userType === 'admin' || user.userType === 'dealershipOwner') {
     return true;
   }
 
   // Staff users check their permissions array
-  if (user.user_type === 'dealership_staff') {
+  if (user.userType === 'dealershipStaff') {
     const permissions = Array.isArray(user.permissions) ? user.permissions : [];
     return permissions.includes(permission);
   }
@@ -38,9 +38,9 @@ export function hasPermission(user, permission) {
  */
 export function hasAnyAdminAccess(user) {
   if (!user) return false;
-  return user.user_type === 'admin' || 
-         user.user_type === 'dealership_owner' || 
-         user.user_type === 'dealership_staff';
+  return user.userType === 'admin' || 
+         user.userType === 'dealershipOwner' || 
+         user.userType === 'dealershipStaff';
 }
 
 /**
@@ -53,12 +53,12 @@ export function getUserPermissions(user) {
   if (!user) return [];
 
   // Admin and Owner have all permissions
-  if (user.user_type === 'admin' || user.user_type === 'dealership_owner') {
+  if (user.userType === 'admin' || user.userType === 'dealershipOwner') {
     return ['leads', 'sales_requests', 'vehicles', 'blogs', 'settings'];
   }
 
   // Staff users return their specific permissions
-  if (user.user_type === 'dealership_staff') {
+  if (user.userType === 'dealershipStaff') {
     return Array.isArray(user.permissions) ? user.permissions : [];
   }
 
@@ -72,7 +72,7 @@ export function getUserPermissions(user) {
  * @returns {boolean} True if user is admin
  */
 export function isAdmin(user) {
-  return user?.user_type === 'admin';
+  return user?.userType === 'admin';
 }
 
 /**
@@ -82,7 +82,7 @@ export function isAdmin(user) {
  * @returns {boolean} True if user is owner
  */
 export function isOwner(user) {
-  return user?.user_type === 'dealership_owner';
+  return user?.userType === 'dealershipOwner';
 }
 
 /**
@@ -92,7 +92,7 @@ export function isOwner(user) {
  * @returns {boolean} True if user is staff
  */
 export function isStaff(user) {
-  return user?.user_type === 'dealership_staff';
+  return user?.userType === 'dealershipStaff';
 }
 
 /**
@@ -103,5 +103,5 @@ export function isStaff(user) {
  * @returns {boolean} True if user can manage users
  */
 export function canManageUsers(user) {
-  return user?.user_type === 'admin' || user?.user_type === 'dealership_owner';
+  return user?.userType === 'admin' || user?.userType === 'dealershipOwner';
 }

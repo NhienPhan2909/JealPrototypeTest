@@ -6,6 +6,7 @@
 
 import { useState, useEffect } from 'react';
 import { useDealershipContext } from '../context/DealershipContext';
+import apiRequest from '../utils/api';
 
 /**
  * GoogleReviewsCarousel - Display Google reviews in a carousel.
@@ -45,7 +46,7 @@ function GoogleReviewsCarousel() {
       setLoading(true);
       setError(null);
 
-      const response = await fetch(`/api/google-reviews/${currentDealershipId}`);
+      const response = await apiRequest(`/api/google-reviews/${currentDealershipId}`);
       
       if (!response.ok) {
         throw new Error('Failed to fetch reviews');
@@ -169,16 +170,29 @@ function GoogleReviewsCarousel() {
             <div key={index} className="border border-gray-200 rounded-lg p-4 flex flex-col">
               {/* Reviewer Name */}
               <div className="flex items-center mb-2">
-                {review.profile_photo_url && (
-                  <img 
-                    src={review.profile_photo_url} 
-                    alt={review.author_name}
-                    className="w-10 h-10 rounded-full mr-3"
-                  />
-                )}
+                <div className="w-10 h-10 rounded-full mr-3 flex-shrink-0 bg-gray-200 flex items-center justify-center overflow-hidden">
+                  {review.profilePhotoUrl ? (
+                    <img 
+                      src={review.profilePhotoUrl} 
+                      alt={review.authorName}
+                      className="w-full h-full object-cover"
+                      referrerPolicy="no-referrer"
+                      crossOrigin="anonymous"
+                      onError={(e) => {
+                        console.log('Failed to load image:', review.profilePhotoUrl);
+                        e.target.style.display = 'none';
+                        e.target.parentElement.innerHTML = `<svg class="w-6 h-6 text-gray-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path></svg>`;
+                      }}
+                    />
+                  ) : (
+                    <svg className="w-6 h-6 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd"></path>
+                    </svg>
+                  )}
+                </div>
                 <div>
-                  <p className="font-semibold text-gray-900">{review.author_name}</p>
-                  <p className="text-xs text-gray-500">{review.relative_time_description}</p>
+                  <p className="font-semibold text-gray-900">{review.authorName}</p>
+                  <p className="text-xs text-gray-500">{review.relativeTimeDescription}</p>
                 </div>
               </div>
 

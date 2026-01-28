@@ -15,6 +15,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useDealershipContext } from '../../context/DealershipContext';
+import apiRequest from '../../utils/api';
 
 /**
  * BlogPost - Single blog post view component.
@@ -127,9 +128,9 @@ function BlogPost() {
       </button>
 
       {/* Featured Image */}
-      {blog.featured_image_url && (
+      {blog.featuredImageUrl && (
         <img
-          src={blog.featured_image_url}
+          src={blog.featuredImageUrl}
           alt={blog.title}
           className="w-full h-96 object-cover rounded-lg mb-8"
         />
@@ -144,10 +145,10 @@ function BlogPost() {
       <div className="flex items-center text-gray-600 mb-8 pb-8 border-b border-gray-200">
         <div className="flex items-center">
           <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-semibold mr-3">
-            {blog.author_name.charAt(0).toUpperCase()}
+            {blog.authorName.charAt(0).toUpperCase()}
           </div>
           <div>
-            <p className="font-medium text-gray-900">{blog.author_name}</p>
+            <p className="font-medium text-gray-900">{blog.authorName}</p>
             <p className="text-sm text-gray-500">
               {formatDate(blog.published_at)}
             </p>

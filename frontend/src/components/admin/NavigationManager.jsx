@@ -16,6 +16,7 @@ import DraggableNavItem from './DraggableNavItem';
 import NavigationButton from '../NavigationButton';
 import { defaultNavigation } from '../../utils/defaultNavigation';
 import { FaPlus } from 'react-icons/fa';
+import apiRequest from '../../utils/api';
 
 function NavigationManager({ dealership, onSave }) {
   const [navItems, setNavItems] = useState(
@@ -181,7 +182,7 @@ function NavigationManager({ dealership, onSave }) {
         <h3 className="text-lg font-bold mb-4">Desktop Navigation Preview</h3>
         <div
           className="rounded-lg p-4 shadow overflow-x-auto"
-          style={{ backgroundColor: dealership.theme_color || '#3B82F6' }}
+          style={{ backgroundColor: dealership.themeColor || '#3B82F6' }}
         >
           <nav className="flex gap-6 justify-center flex-wrap">
             {navItems.filter(item => item.enabled).map(item => (
@@ -246,7 +247,7 @@ function NavigationManager({ dealership, onSave }) {
             <h3 className="text-lg font-bold mb-4">Mobile Navigation Preview</h3>
             <div
               className="rounded-lg p-4 shadow max-w-xs mx-auto"
-              style={{ backgroundColor: dealership.theme_color || '#3B82F6' }}
+              style={{ backgroundColor: dealership.themeColor || '#3B82F6' }}
             >
               <nav className="space-y-1">
                 {navItems.filter(item => item.enabled).map(item => (

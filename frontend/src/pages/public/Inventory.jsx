@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import VehicleCard from '../../components/VehicleCard';
 import { useDealershipContext } from '../../context/DealershipContext';
+import apiRequest from '../../utils/api';
 
 /**
  * Inventory - Public vehicle listing page with search, filter, and sort controls.
@@ -77,13 +78,14 @@ function Inventory() {
         if (urlMaxPrice) params.append('maxPrice', urlMaxPrice);
 
         // Fetch vehicles with filters (server-side filtering)
-        const response = await fetch(`/api/vehicles?${params.toString()}`);
+        const response = await apiRequest(`/api/vehicles?${params.toString()}`);
 
         if (!response.ok) {
           throw new Error('Failed to fetch vehicles');
         }
 
-        const data = await response.json();
+        const result = await response.json();
+        const data = result.data || result.Data || result;
 
         // Filter to show only public-visible vehicles (active and pending)
         // Exclude 'sold' and 'draft' status vehicles from public inventory

@@ -17,13 +17,14 @@
  * 
  * @example
  * <TemplateSelector
- *   currentSettings={{ theme_color: '#3B82F6', ... }}
+ *   currentSettings={{ themeColor: '#3B82F6', ... }}
  *   onApplyTemplate={(template) => applyTemplate(template)}
  * />
  */
 
 import { useState, useEffect, useContext } from 'react';
 import { AdminContext } from '../../context/AdminContext';
+import apiRequest from '../../utils/api';
 
 function TemplateSelector({ currentSettings, onApplyTemplate }) {
   const { selectedDealership } = useContext(AdminContext);
@@ -72,12 +73,10 @@ function TemplateSelector({ currentSettings, onApplyTemplate }) {
     setError('');
 
     try {
-      // Pass dealership_id as query param for admin users
-      const url = `/api/design-templates?dealership_id=${selectedDealership.id}`;
+      // Pass dealershipId as query param for admin users
+      const url = `/api/design-templates?dealershipId=${selectedDealership.id}`;
       
-      const response = await fetch(url, {
-        credentials: 'include'
-      });
+      const response = await apiRequest(url);
 
       console.log('Design Templates API Response:', {
         status: response.status,
@@ -107,10 +106,10 @@ function TemplateSelector({ currentSettings, onApplyTemplate }) {
    */
   const handleApplyTemplate = (template) => {
     onApplyTemplate({
-      theme_color: template.theme_color,
-      secondary_theme_color: template.secondary_theme_color,
-      body_background_color: template.body_background_color,
-      font_family: template.font_family
+      themeColor: template.themeColor,
+      secondaryThemeColor: template.secondaryThemeColor,
+      bodyBackgroundColor: template.bodyBackgroundColor,
+      fontFamily: template.fontFamily
     });
 
     setSuccessMessage(`Template "${template.name}" applied successfully!`);
@@ -132,26 +131,34 @@ function TemplateSelector({ currentSettings, onApplyTemplate }) {
     setError('');
 
     try {
-      const response = await fetch('/api/design-templates', {
+      const response = await apiRequest('/api/design-templates', {
         method: 'POST',
-        credentials: 'include',
         headers: {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          dealership_id: selectedDealership.id,
+          dealershipId: selectedDealership.id,
           name: newTemplateName.trim(),
           description: newTemplateDescription.trim() || undefined,
-          theme_color: currentSettings.theme_color,
-          secondary_theme_color: currentSettings.secondary_theme_color,
-          body_background_color: currentSettings.body_background_color,
-          font_family: currentSettings.font_family
+          themeColor: currentSettings.themeColor,
+          secondaryThemeColor: currentSettings.secondaryThemeColor,
+          bodyBackgroundColor: currentSettings.bodyBackgroundColor,
+          fontFamily: currentSettings.fontFamily
         })
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to save template');
+        let errorMessage = 'Failed to save template';
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.message || errorData.error || errorMessage;
+        } catch {
+          // No JSON body (like 401)
+          if (response.status === 401) {
+            errorMessage = 'Unauthorized. Please log in again.';
+          }
+        }
+        throw new Error(errorMessage);
       }
 
       const newTemplate = await response.json();
@@ -183,16 +190,23 @@ function TemplateSelector({ currentSettings, onApplyTemplate }) {
 
     try {
       // Include dealership_id for admin users
-      const url = `/api/design-templates/${templateId}?dealership_id=${selectedDealership.id}`;
+      const url = `/api/design-templates/${templateId}?dealershipId=${selectedDealership.id}`;
       
-      const response = await fetch(url, {
-        method: 'DELETE',
-        credentials: 'include'
+      const response = await apiRequest(url, {
+        method: 'DELETE'
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to delete template');
+        let errorMessage = 'Failed to delete template';
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.message || errorData.error || errorMessage;
+        } catch {
+          if (response.status === 401) {
+            errorMessage = 'Unauthorized. Please log in again.';
+          }
+        }
+        throw new Error(errorMessage);
       }
 
       setTemplates(templates.filter(t => t.id !== templateId));
@@ -207,8 +221,8 @@ function TemplateSelector({ currentSettings, onApplyTemplate }) {
     }
   };
 
-  const presetTemplates = templates.filter(t => t.is_preset);
-  const customTemplates = templates.filter(t => !t.is_preset);
+  const presetTemplates = templates.filter(t => t.isPreset);
+  const customTemplates = templates.filter(t => !t.isPreset);
 
   return (
     <div className="bg-white rounded-lg shadow-md p-6 mb-6">
@@ -312,23 +326,23 @@ function TemplateSelector({ currentSettings, onApplyTemplate }) {
               <div className="flex gap-2 mb-3">
                 <div
                   className="w-8 h-8 rounded border border-gray-300"
-                  style={{ backgroundColor: template.theme_color }}
-                  title={`Primary: ${template.theme_color}`}
+                  style={{ backgroundColor: template.themeColor }}
+                  title={`Primary: ${template.themeColor}`}
                 />
                 <div
                   className="w-8 h-8 rounded border border-gray-300"
-                  style={{ backgroundColor: template.secondary_theme_color }}
-                  title={`Secondary: ${template.secondary_theme_color}`}
+                  style={{ backgroundColor: template.secondaryThemeColor }}
+                  title={`Secondary: ${template.secondaryThemeColor}`}
                 />
                 <div
                   className="w-8 h-8 rounded border border-gray-300"
-                  style={{ backgroundColor: template.body_background_color }}
-                  title={`Background: ${template.body_background_color}`}
+                  style={{ backgroundColor: template.bodyBackgroundColor }}
+                  title={`Background: ${template.bodyBackgroundColor}`}
                 />
               </div>
 
               <p className="text-xs text-gray-500 mb-3">
-                Font: {fontDisplayNames[template.font_family] || template.font_family}
+                Font: {fontDisplayNames[template.fontFamily] || template.fontFamily}
               </p>
 
               <button
@@ -362,23 +376,23 @@ function TemplateSelector({ currentSettings, onApplyTemplate }) {
                 <div className="flex gap-2 mb-3">
                   <div
                     className="w-8 h-8 rounded border border-gray-300"
-                    style={{ backgroundColor: template.theme_color }}
-                    title={`Primary: ${template.theme_color}`}
+                    style={{ backgroundColor: template.themeColor }}
+                    title={`Primary: ${template.themeColor}`}
                   />
                   <div
                     className="w-8 h-8 rounded border border-gray-300"
-                    style={{ backgroundColor: template.secondary_theme_color }}
-                    title={`Secondary: ${template.secondary_theme_color}`}
+                    style={{ backgroundColor: template.secondaryThemeColor }}
+                    title={`Secondary: ${template.secondaryThemeColor}`}
                   />
                   <div
                     className="w-8 h-8 rounded border border-gray-300"
-                    style={{ backgroundColor: template.body_background_color }}
-                    title={`Background: ${template.body_background_color}`}
+                    style={{ backgroundColor: template.bodyBackgroundColor }}
+                    title={`Background: ${template.bodyBackgroundColor}`}
                   />
                 </div>
 
                 <p className="text-xs text-gray-500 mb-3">
-                  Font: {fontDisplayNames[template.font_family] || template.font_family}
+                  Font: {fontDisplayNames[template.fontFamily] || template.fontFamily}
                 </p>
 
                 <div className="flex gap-2">

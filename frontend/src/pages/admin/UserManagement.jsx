@@ -6,9 +6,10 @@
 import { useState, useEffect, useContext } from 'react';
 import { AdminContext } from '../../context/AdminContext';
 import AdminHeader from '../../components/AdminHeader';
+import apiRequest from '../../utils/api';
 
 export default function UserManagement() {
-  const { user } = useContext(AdminContext);
+  const { user, selectedDealership } = useContext(AdminContext);
   const [users, setUsers] = useState([]);
   const [dealerships, setDealerships] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -21,9 +22,9 @@ export default function UserManagement() {
     username: '',
     password: '',
     email: '',
-    full_name: '',
-    user_type: 'dealership_staff',
-    dealership_id: '',
+    fullName: '',
+    userType: 'dealership_staff',
+    dealershipId: '',
     permissions: []
   });
 
@@ -37,16 +38,22 @@ export default function UserManagement() {
 
   useEffect(() => {
     fetchUsers();
-    if (user?.user_type === 'admin') {
+    if (user?.userType === 'admin') {
       fetchDealerships();
     }
   }, [user]);
 
   const fetchUsers = async () => {
+    if (!selectedDealership) {
+      setIsLoading(false);
+      return;
+    }
+
     try {
-      const response = await fetch('/api/users', { credentials: 'include' });
+      const response = await apiRequest(`/api/users/dealership/${selectedDealership.id}/all`);
       if (response.ok) {
-        const data = await response.json();
+        const result = await response.json();
+        const data = result.data || result.Data || result;
         setUsers(data);
       } else {
         setError('Failed to load users');
@@ -61,13 +68,15 @@ export default function UserManagement() {
 
   const fetchDealerships = async () => {
     try {
-      const response = await fetch('/api/dealers', { credentials: 'include' });
+      const response = await apiRequest('/api/dealers');
       if (response.ok) {
-        const data = await response.json();
-        setDealerships(data);
+        const result = await response.json();
+        const data = result.data || result.Data || result;
+        setDealerships(Array.isArray(data) ? data : []);
       }
     } catch (err) {
       console.error('Fetch dealerships error:', err);
+      setDealerships([]);
     }
   };
 
@@ -78,12 +87,12 @@ export default function UserManagement() {
     try {
       const payload = { ...formData };
       
-      // Set dealership_id based on user type
-      if (user.user_type === 'dealership_owner') {
-        payload.dealership_id = user.dealership_id;
-        payload.user_type = 'dealership_staff';
-      } else if (payload.user_type === 'admin') {
-        payload.dealership_id = null;
+      // Set dealershipId based on user type
+      if (user.userType === 'dealership_owner') {
+        payload.dealershipId = user.dealershipId;
+        payload.userType = 'dealership_staff';
+      } else if (payload.userType === 'admin') {
+        payload.dealershipId = null;
       }
 
       const response = await fetch('/api/users', {
@@ -118,7 +127,7 @@ export default function UserManagement() {
         credentials: 'include',
         body: JSON.stringify({
           email: formData.email,
-          full_name: formData.full_name,
+          fullName: formData.fullName,
           permissions: formData.permissions
         })
       });
@@ -141,10 +150,9 @@ export default function UserManagement() {
     if (!confirm('Are you sure you want to delete this user? This action cannot be undone.')) return;
 
     try {
-      const response = await fetch(`/api/users/${userId}`, {
+      const response = await apiRequest(`/api/users/${userId}`, {
         method: 'DELETE',
-        credentials: 'include'
-      });
+        });
 
       if (response.ok) {
         await fetchUsers();
@@ -164,9 +172,9 @@ export default function UserManagement() {
       username: userToEdit.username,
       password: '',
       email: userToEdit.email,
-      full_name: userToEdit.full_name,
-      user_type: userToEdit.user_type,
-      dealership_id: userToEdit.dealership_id || '',
+      fullName: userToEdit.fullName,
+      userType: userToEdit.userType,
+      dealershipId: userToEdit.dealershipId || '',
       permissions: userToEdit.permissions || []
     });
     setShowCreateForm(false);
@@ -177,9 +185,9 @@ export default function UserManagement() {
       username: '',
       password: '',
       email: '',
-      full_name: '',
-      user_type: user?.user_type === 'admin' ? 'dealership_owner' : 'dealership_staff',
-      dealership_id: user?.user_type === 'dealership_owner' ? user.dealership_id : '',
+      fullName: '',
+      userType: user?.userType === 'admin' ? 'dealership_owner' : 'dealership_staff',
+      dealershipId: user?.userType === 'dealership_owner' ? user.dealershipId : '',
       permissions: []
     });
   };
@@ -272,20 +280,20 @@ export default function UserManagement() {
                 <input
                   type="text"
                   className="input-field"
-                  value={formData.full_name}
-                  onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
+                  value={formData.fullName}
+                  onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
                   required
                 />
               </div>
 
-              {!editingUser && user?.user_type === 'admin' && (
+              {!editingUser && user?.userType === 'admin' && (
                 <>
                   <div className="mb-4">
                     <label className="block text-sm font-medium mb-2">User Type *</label>
                     <select
                       className="input-field"
-                      value={formData.user_type}
-                      onChange={(e) => setFormData({ ...formData, user_type: e.target.value })}
+                      value={formData.userType}
+                      onChange={(e) => setFormData({ ...formData, userType: e.target.value })}
                       required
                     >
                       <option value="dealership_owner">Dealership Owner</option>
@@ -293,13 +301,13 @@ export default function UserManagement() {
                     </select>
                   </div>
 
-                  {formData.user_type === 'dealership_owner' && (
+                  {formData.userType === 'dealership_owner' && (
                     <div className="mb-4">
                       <label className="block text-sm font-medium mb-2">Dealership *</label>
                       <select
                         className="input-field"
-                        value={formData.dealership_id}
-                        onChange={(e) => setFormData({ ...formData, dealership_id: parseInt(e.target.value) })}
+                        value={formData.dealershipId}
+                        onChange={(e) => setFormData({ ...formData, dealershipId: parseInt(e.target.value) })}
                         required
                       >
                         <option value="">Select Dealership</option>
@@ -312,7 +320,7 @@ export default function UserManagement() {
                 </>
               )}
 
-              {(formData.user_type === 'dealership_staff' || editingUser?.user_type === 'dealership_staff') && (
+              {(formData.userType === 'dealership_staff' || editingUser?.userType === 'dealership_staff') && (
                 <div className="mb-4">
                   <label className="block text-sm font-medium mb-2">Permissions</label>
                   <div className="space-y-2">
@@ -362,7 +370,7 @@ export default function UserManagement() {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Username</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
-                  {user?.user_type === 'admin' && (
+                  {user?.userType === 'admin' && (
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Dealership</th>
                   )}
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Permissions</th>
@@ -372,19 +380,19 @@ export default function UserManagement() {
               <tbody className="bg-white divide-y divide-gray-200">
                 {users.map(u => (
                   <tr key={u.id}>
-                    <td className="px-6 py-4 whitespace-nowrap">{u.full_name}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">{u.fullName}</td>
                     <td className="px-6 py-4 whitespace-nowrap">{u.username}</td>
                     <td className="px-6 py-4 whitespace-nowrap">{u.email}</td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className="px-2 py-1 text-xs rounded bg-blue-100 text-blue-800">
-                        {u.user_type.replace('_', ' ')}
+                        {u.userType.replace('_', ' ')}
                       </span>
                     </td>
-                    {user?.user_type === 'admin' && (
-                      <td className="px-6 py-4 whitespace-nowrap">{u.dealership_name || '-'}</td>
+                    {user?.userType === 'admin' && (
+                      <td className="px-6 py-4 whitespace-nowrap">{u.dealershipName || '-'}</td>
                     )}
                     <td className="px-6 py-4">
-                      {u.user_type === 'dealership_staff' ? (
+                      {u.userType === 'dealership_staff' ? (
                         u.permissions?.length > 0 ? u.permissions.join(', ') : 'Read-only'
                       ) : (
                         'Full access'

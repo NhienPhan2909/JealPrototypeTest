@@ -30,7 +30,7 @@ function Footer() {
   const { dealership, loading, error } = useDealership(currentDealershipId);
 
   // Get theme color from dealership data, default to blue if not set
-  const themeColor = dealership?.theme_color || '#3B82F6';
+  const themeColor = dealership?.themeColor || '#3B82F6';
 
   // Get navigation config and filter out admin/login links
   const navigationConfig = getValidatedNavigation(dealership?.navigation_config);
@@ -111,13 +111,13 @@ function Footer() {
             )}
 
             {/* Social Media Links */}
-            {(dealership?.facebook_url || dealership?.instagram_url) && (
+            {(dealership?.facebookUrl || dealership?.instagramUrl) && (
               <div className="mt-6">
                 <h4 className="font-semibold mb-3 opacity-90">Follow Us</h4>
                 <div className="flex gap-4">
-                  {dealership?.facebook_url && (
+                  {dealership?.facebookUrl && (
                     <a
-                      href={dealership.facebook_url}
+                      href={dealership.facebookUrl}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="opacity-80 hover:opacity-100 transition-opacity"
@@ -129,9 +129,9 @@ function Footer() {
                     </a>
                   )}
 
-                  {dealership?.instagram_url && (
+                  {dealership?.instagramUrl && (
                     <a
-                      href={dealership.instagram_url}
+                      href={dealership.instagramUrl}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="opacity-80 hover:opacity-100 transition-opacity"

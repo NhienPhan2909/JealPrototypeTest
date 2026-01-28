@@ -14,6 +14,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDealershipContext } from '../../context/DealershipContext';
+import apiRequest from '../../utils/api';
 
 /**
  * Blog - Public blog listing page component.
@@ -41,14 +42,15 @@ function Blog() {
         setError(null);
 
         const response = await fetch(
-          `/api/blogs/published?dealershipId=${currentDealershipId}`
+          `/api/blog-posts/dealership/${currentDealershipId}?publishedOnly=true`
         );
 
         if (!response.ok) {
           throw new Error('Failed to fetch blog posts');
         }
 
-        const data = await response.json();
+        const result = await response.json();
+        const data = result.data || result.Data || result;
         setBlogs(data);
       } catch (err) {
         console.error('Error fetching blog posts:', err);
@@ -128,9 +130,9 @@ function Blog() {
               className="bg-white rounded-lg shadow-md overflow-hidden cursor-pointer hover:shadow-xl transition-shadow duration-300"
             >
               {/* Featured Image */}
-              {blog.featured_image_url ? (
+              {blog.featuredImageUrl ? (
                 <img
-                  src={blog.featured_image_url}
+                  src={blog.featuredImageUrl}
                   alt={blog.title}
                   className="w-full h-48 object-cover"
                 />
@@ -147,7 +149,7 @@ function Blog() {
                 </h2>
                 
                 <div className="flex items-center text-sm text-gray-500 mb-3">
-                  <span>{blog.author_name}</span>
+                  <span>{blog.authorName}</span>
                   <span className="mx-2">•</span>
                   <span>{formatDate(blog.published_at)}</span>
                 </div>

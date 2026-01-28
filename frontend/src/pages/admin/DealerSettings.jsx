@@ -24,6 +24,7 @@ import NavigationManager from '../../components/admin/NavigationManager';
 import TemplateSelector from '../../components/admin/TemplateSelector';
 import Unauthorized from '../../components/Unauthorized';
 import { hasPermission } from '../../utils/permissions';
+import apiRequest from '../../utils/api';
 
 function DealerSettings() {
   const { selectedDealership, setSelectedDealership, user } = useContext(AdminContext);
@@ -65,8 +66,8 @@ function DealerSettings() {
       phone: '',
       email: '',
       hours: '',
-      finance_policy: '',
-      warranty_policy: '',
+      financePolicy: '',
+      warrantyPolicy: '',
       about: ''
     }
   });
@@ -79,39 +80,39 @@ function DealerSettings() {
     if (selectedDealership) {
       const fetchDealershipData = async () => {
         try {
-          const response = await fetch(`/api/dealers/${selectedDealership.id}`, {
-            credentials: 'include'
-          });
+          const response = await apiRequest(`/api/dealers/${selectedDealership.id}`);
           if (response.ok) {
-            const data = await response.json();
+            const apiResponse = await response.json();
+            const data = apiResponse.data || apiResponse;
+            
             reset({
               name: data.name || '',
               address: data.address || '',
               phone: data.phone || '',
               email: data.email || '',
               hours: data.hours || '',
-              finance_policy: data.finance_policy || '',
-              warranty_policy: data.warranty_policy || '',
+              financePolicy: data.financePolicy || '',
+              warrantyPolicy: data.warrantyPolicy || '',
               about: data.about || ''
             });
-            setLogoUrl(data.logo_url || '');
-            setHeroBackgroundUrl(data.hero_background_image || '');
-            setHeroType(data.hero_type || 'image');
-            setHeroVideoUrl(data.hero_video_url || '');
-            setHeroCarouselImages(data.hero_carousel_images || []);
-            setThemeColor(data.theme_color || '#3B82F6');
-            setSecondaryThemeColor(data.secondary_theme_color || '#FFFFFF');
-            setBodyBackgroundColor(data.body_background_color || '#FFFFFF');
-            setFontFamily(data.font_family || 'system');
-            setFinancePolicyCount(data.finance_policy?.length || 0);
-            setWarrantyPolicyCount(data.warranty_policy?.length || 0);
-            setFacebookUrl(data.facebook_url || '');
-            setInstagramUrl(data.instagram_url || '');
-            setFinancePromoImage(data.finance_promo_image || '');
-            setFinancePromoText(data.finance_promo_text || '');
-            setWarrantyPromoImage(data.warranty_promo_image || '');
-            setWarrantyPromoText(data.warranty_promo_text || '');
-            setWebsiteUrl(data.website_url || '');
+            setLogoUrl(data.logoUrl || '');
+            setHeroBackgroundUrl(data.heroBackgroundImage || '');
+            setHeroType(data.heroType || 'image');
+            setHeroVideoUrl(data.heroVideoUrl || '');
+            setHeroCarouselImages(data.heroCarouselImages || []);
+            setThemeColor(data.themeColor || '#3B82F6');
+            setSecondaryThemeColor(data.secondaryThemeColor || '#FFFFFF');
+            setBodyBackgroundColor(data.bodyBackgroundColor || '#FFFFFF');
+            setFontFamily(data.fontFamily || 'system');
+            setFinancePolicyCount((data.financePolicy || '')?.length || 0);
+            setWarrantyPolicyCount((data.warrantyPolicy || '')?.length || 0);
+            setFacebookUrl(data.facebookUrl || '');
+            setInstagramUrl(data.instagramUrl || '');
+            setFinancePromoImage(data.financePromoImage || '');
+            setFinancePromoText(data.financePromoText || '');
+            setWarrantyPromoImage(data.warrantyPromoImage || '');
+            setWarrantyPromoText(data.warrantyPromoText || '');
+            setWebsiteUrl(data.websiteUrl || '');
           }
         } catch (err) {
           console.error('Failed to fetch dealership data:', err);
@@ -176,65 +177,43 @@ function DealerSettings() {
   };
 
   /**
-   * Handles hero background image file selection and upload.
-   * Uses file input and /api/upload endpoint for reliable uploads.
-   *
+   * Handles hero background image upload via Cloudinary upload widget.
+   * 
+   * Opens Cloudinary widget configured for hero background image upload.
+   * Updates heroBackgroundUrl state with returned Cloudinary URL on success.
+   * 
    * @function handleHeroBackgroundUpload
-   * @param {Event} e - File input change event
-   * @returns {Promise<void>}
+   * @returns {void}
    */
-  const handleHeroBackgroundUpload = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    // Validate file type
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
-    if (!allowedTypes.includes(file.type)) {
-      setError('Invalid file type. Please upload JPG, PNG, or WebP images only.');
-      e.target.value = ''; // Reset input
-      return;
-    }
-
-    // Validate file size (5MB max)
-    const maxSize = 5 * 1024 * 1024; // 5MB in bytes
-    if (file.size > maxSize) {
-      setError('File too large. Maximum size is 5MB.');
-      e.target.value = ''; // Reset input
-      return;
-    }
-
-    setLoading(true);
-    setError('');
-
-    try {
-      const formData = new FormData();
-      formData.append('image', file);
-
-      const response = await fetch('/api/upload', {
-        method: 'POST',
-        credentials: 'include',
-        body: formData
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Upload failed');
-      }
-
-      const data = await response.json();
-      setHeroBackgroundUrl(data.url);
-      setSuccessMessage('Hero background image uploaded successfully!');
-
-      // Auto-clear success message after 5 seconds
-      setTimeout(() => {
-        setSuccessMessage('');
-      }, 5000);
-    } catch (err) {
-      console.error('Upload error:', err);
-      setError('Failed to upload image: ' + err.message);
-    } finally {
-      setLoading(false);
-      e.target.value = ''; // Reset input for future uploads
+  const handleHeroBackgroundUpload = () => {
+    if (window.cloudinary) {
+      window.cloudinary.openUploadWidget(
+        {
+          cloudName: import.meta.env.VITE_CLOUDINARY_CLOUD_NAME,
+          uploadPreset: import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET,
+          sources: ['local'],
+          multiple: false,
+          maxFileSize: 5000000, // 5MB
+          clientAllowedFormats: ['jpg', 'png', 'webp'],
+          folder: 'dealership-heroes',
+          resourceType: 'image'
+        },
+        (error, result) => {
+          if (error) {
+            console.error('Cloudinary upload error:', error);
+            setError('Failed to upload hero background. Please try again.');
+            return;
+          }
+          if (result.event === 'success') {
+            setHeroBackgroundUrl(result.info.secure_url);
+            setSuccessMessage('Hero background image uploaded successfully!');
+            setTimeout(() => setSuccessMessage(''), 5000);
+          }
+        }
+      );
+    } else {
+      console.error('Cloudinary widget not loaded');
+      setError('Upload widget is not available. Please refresh the page.');
     }
   };
 
@@ -284,9 +263,8 @@ function DealerSettings() {
       const formData = new FormData();
       formData.append('image', file); // Using same field name for consistency
 
-      const response = await fetch('/api/upload', {
+      const response = await apiRequest('/api/upload', {
         method: 'POST',
-        credentials: 'include',
         body: formData
       });
 
@@ -356,9 +334,8 @@ function DealerSettings() {
       const formData = new FormData();
       formData.append('image', file);
 
-      const response = await fetch('/api/upload', {
+      const response = await apiRequest('/api/upload', {
         method: 'POST',
-        credentials: 'include',
         body: formData
       });
 
@@ -404,11 +381,10 @@ function DealerSettings() {
   const refreshDealership = async () => {
     if (selectedDealership) {
       try {
-        const response = await fetch(`/api/dealers/${selectedDealership.id}`, {
-          credentials: 'include'
-        });
+        const response = await apiRequest(`/api/dealers/${selectedDealership.id}`);
         if (response.ok) {
-          const updatedData = await response.json();
+          const apiResponse = await response.json();
+          const updatedData = apiResponse.data || apiResponse;
           setSelectedDealership(updatedData);
         }
       } catch (err) {
@@ -450,9 +426,8 @@ function DealerSettings() {
       const formData = new FormData();
       formData.append('image', file);
 
-      const response = await fetch('/api/upload', {
+      const response = await apiRequest('/api/upload', {
         method: 'POST',
-        credentials: 'include',
         body: formData
       });
 
@@ -510,9 +485,8 @@ function DealerSettings() {
       const formData = new FormData();
       formData.append('image', file);
 
-      const response = await fetch('/api/upload', {
+      const response = await apiRequest('/api/upload', {
         method: 'POST',
-        credentials: 'include',
         body: formData
       });
 
@@ -553,43 +527,43 @@ function DealerSettings() {
 
     const dealershipData = {
       name: formData.name,
-      logo_url: logoUrl || null,
+      logoUrl: logoUrl || null,
       address: formData.address,
       phone: formData.phone,
       email: formData.email,
       hours: formData.hours || null,
-      finance_policy: formData.finance_policy || null,
-      warranty_policy: formData.warranty_policy || null,
+      financePolicy: formData.financePolicy || null,
+      warrantyPolicy: formData.warrantyPolicy || null,
       about: formData.about || null,
-      hero_background_image: heroBackgroundUrl || null,
-      hero_type: heroType,
-      hero_video_url: heroVideoUrl || null,
-      hero_carousel_images: heroCarouselImages,
-      theme_color: themeColor,
-      secondary_theme_color: secondaryThemeColor,
-      body_background_color: bodyBackgroundColor,
-      font_family: fontFamily,
-      facebook_url: facebookUrl || null,
-      instagram_url: instagramUrl || null,
-      finance_promo_image: financePromoImage || null,
-      finance_promo_text: financePromoText || null,
-      warranty_promo_image: warrantyPromoImage || null,
-      warranty_promo_text: warrantyPromoText || null,
-      website_url: websiteUrl || null
+      heroBackgroundImage: heroBackgroundUrl || null,
+      heroType: heroType,
+      heroVideoUrl: heroVideoUrl || null,
+      heroCarouselImages: heroCarouselImages,
+      themeColor: themeColor,
+      secondaryThemeColor: secondaryThemeColor,
+      bodyBackgroundColor: bodyBackgroundColor,
+      fontFamily: fontFamily,
+      facebookUrl: facebookUrl || null,
+      instagramUrl: instagramUrl || null,
+      financePromoImage: financePromoImage || null,
+      financePromoText: financePromoText || null,
+      warrantyPromoImage: warrantyPromoImage || null,
+      warrantyPromoText: warrantyPromoText || null,
+      websiteUrl: websiteUrl || null
     };
 
     try {
-      const response = await fetch(`/api/dealers/${selectedDealership.id}`, {
+      const response = await apiRequest(`/api/dealers/${selectedDealership.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json'
         },
-        credentials: 'include',
         body: JSON.stringify(dealershipData)
       });
 
       if (response.ok) {
-        const updatedData = await response.json();
+        const apiResponse = await response.json();
+        const updatedData = apiResponse.data || apiResponse;
         setSelectedDealership(updatedData);
         setSuccessMessage('Dealership settings updated successfully!');
         
@@ -599,7 +573,7 @@ function DealerSettings() {
         }, 5000);
       } else {
         const errorData = await response.json();
-        setError(errorData.error || 'Failed to update dealership settings.');
+        setError(errorData.message || errorData.error || 'Failed to update dealership settings.');
       }
     } catch (err) {
       console.error('Failed to update dealership:', err);
@@ -616,10 +590,10 @@ function DealerSettings() {
    * @param {Object} template - Template settings to apply
    */
   const handleApplyTemplate = (template) => {
-    setThemeColor(template.theme_color);
-    setSecondaryThemeColor(template.secondary_theme_color);
-    setBodyBackgroundColor(template.body_background_color);
-    setFontFamily(template.font_family);
+    setThemeColor(template.themeColor);
+    setSecondaryThemeColor(template.secondaryThemeColor);
+    setBodyBackgroundColor(template.bodyBackgroundColor);
+    setFontFamily(template.fontFamily);
   };
 
   return (
@@ -632,10 +606,10 @@ function DealerSettings() {
           {canEditSettings && (
             <TemplateSelector
               currentSettings={{
-                theme_color: themeColor,
-                secondary_theme_color: secondaryThemeColor,
-                body_background_color: bodyBackgroundColor,
-                font_family: fontFamily
+                themeColor: themeColor,
+                secondaryThemeColor: secondaryThemeColor,
+                bodyBackgroundColor: bodyBackgroundColor,
+                fontFamily: fontFamily
               }}
               onApplyTemplate={handleApplyTemplate}
             />
@@ -705,14 +679,14 @@ function DealerSettings() {
 
             {/* Website URL */}
             <div>
-              <label htmlFor="website_url" className="block font-medium mb-1">
+              <label htmlFor="websiteUrl" className="block font-medium mb-1">
                 Website URL
               </label>
               <p className="text-sm text-gray-600 mb-2">
                 Custom URL/domain for this dealership's website (e.g., acme-auto.com). Leave empty if not applicable.
               </p>
               <input
-                id="website_url"
+                id="websiteUrl"
                 type="text"
                 placeholder="e.g., acme-auto.com"
                 value={websiteUrl}
@@ -1026,16 +1000,7 @@ function DealerSettings() {
                         </div>
                       </div>
                       <div className="flex gap-3">
-                        <label className="btn-secondary cursor-pointer">
-                          Change Image
-                          <input
-                            type="file"
-                            accept="image/jpeg,image/png,image/webp"
-                            onChange={handleHeroBackgroundUpload}
-                            disabled={loading}
-                            className="hidden"
-                          />
-                        </label>
+                        <button type="button" onClick={handleHeroBackgroundUpload} disabled={loading} className="btn-secondary">Change Image</button>
                         <button
                           type="button"
                           onClick={handleRemoveHeroBackground}
@@ -1047,16 +1012,7 @@ function DealerSettings() {
                       </div>
                     </div>
                   ) : (
-                    <label className="btn-secondary cursor-pointer inline-block">
-                      Upload Hero Background Image
-                      <input
-                        type="file"
-                        accept="image/jpeg,image/png,image/webp"
-                        onChange={handleHeroBackgroundUpload}
-                        disabled={loading}
-                        className="hidden"
-                      />
-                    </label>
+                    <button type="button" onClick={handleHeroBackgroundUpload} disabled={loading} className="btn-secondary">Upload Hero Background Image</button>
                   )}
                 </div>
               )}
@@ -1563,3 +1519,4 @@ function DealerSettings() {
 }
 
 export default DealerSettings;
+

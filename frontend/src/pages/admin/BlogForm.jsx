@@ -24,6 +24,7 @@ import { AdminContext } from '../../context/AdminContext';
 import AdminHeader from '../../components/AdminHeader';
 import Unauthorized from '../../components/Unauthorized';
 import { hasPermission } from '../../utils/permissions';
+import apiRequest from '../../utils/api';
 
 /**
  * BlogForm - Create and edit blog post form component.
@@ -55,7 +56,7 @@ function BlogForm() {
       slug: '',
       content: '',
       excerpt: '',
-      author_name: '',
+      authorName: '',
       status: 'draft'
     }
   });
@@ -116,11 +117,11 @@ function BlogForm() {
           slug: blog.slug,
           content: blog.content,
           excerpt: blog.excerpt || '',
-          author_name: blog.author_name,
+          authorName: blog.authorName,
           status: blog.status
         });
 
-        setFeaturedImage(blog.featured_image_url || '');
+        setFeaturedImage(blog.featuredImageUrl || '');
       } catch (err) {
         console.error('Error fetching blog post:', err);
         setError(err.message);
@@ -160,9 +161,8 @@ function BlogForm() {
       const formData = new FormData();
       formData.append('image', file);
 
-      const response = await fetch('/api/upload', {
+      const response = await apiRequest('/api/upload', {
         method: 'POST',
-        credentials: 'include',
         body: formData
       });
 
@@ -210,7 +210,7 @@ function BlogForm() {
     try {
       const blogData = {
         ...data,
-        featured_image_url: featuredImage || null
+        featuredImageUrl: featuredImage || null
       };
 
       let response;
@@ -227,8 +227,8 @@ function BlogForm() {
           }
         );
       } else {
-        // Create mode: POST request with dealership_id in body
-        blogData.dealership_id = selectedDealership.id;
+        // Create mode: POST request with dealershipId in body
+        blogData.dealershipId = selectedDealership.id;
         response = await fetch('/api/blogs', {
           method: 'POST',
           credentials: 'include',
@@ -402,18 +402,18 @@ function BlogForm() {
 
             {/* Author Name */}
             <div>
-              <label htmlFor="author_name" className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="authorName" className="block text-sm font-medium text-gray-700 mb-2">
                 Author Name *
               </label>
               <input
-                id="author_name"
+                id="authorName"
                 type="text"
-                {...register('author_name', { required: 'Author name is required' })}
+                {...register('authorName', { required: 'Author name is required' })}
                 className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 placeholder="Enter author name"
               />
-              {errors.author_name && (
-                <p className="text-red-600 text-sm mt-1">{errors.author_name.message}</p>
+              {errors.authorName && (
+                <p className="text-red-600 text-sm mt-1">{errors.authorName.message}</p>
               )}
             </div>
 
