@@ -31,7 +31,7 @@ function SellYourCar() {
     model: '',
     year: '',
     kilometers: '',
-    additional_message: ''
+    additionalMessage: ''
   });
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -75,7 +75,7 @@ function SellYourCar() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          dealership_id: currentDealershipId,
+          dealershipId: currentDealershipId,
           ...formData,
           captchaToken
         })
@@ -95,7 +95,7 @@ function SellYourCar() {
         model: '',
         year: '',
         kilometers: '',
-        additional_message: ''
+        additionalMessage: ''
       });
       setCaptchaToken(null);
       if (captchaRef.current) {
@@ -270,13 +270,13 @@ function SellYourCar() {
               </div>
 
               <div className="mb-4">
-                <label className="block text-gray-700 font-medium mb-2" htmlFor="additional_message">
+                <label className="block text-gray-700 font-medium mb-2" htmlFor="additionalMessage">
                   Additional Information
                 </label>
                 <textarea
-                  id="additional_message"
-                  name="additional_message"
-                  value={formData.additional_message}
+                  id="additionalMessage"
+                  name="additionalMessage"
+                  value={formData.additionalMessage}
                   onChange={handleChange}
                   rows="4"
                   className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2"

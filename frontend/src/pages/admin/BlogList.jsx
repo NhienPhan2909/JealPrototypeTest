@@ -63,17 +63,16 @@ export default function BlogList() {
         setLoading(true);
         setError(null);
 
-        const response = await fetch(
-          `/api/blogs?dealershipId=${selectedDealership.id}`,
-          { credentials: 'include' }
+        const response = await apiRequest(
+          `/api/blog-posts/dealership/${selectedDealership.id}`
         );
 
         if (!response.ok) {
           throw new Error('Failed to fetch blog posts');
         }
 
-        const data = await response.json();
-        setBlogs(data);
+        const result = await response.json();
+        setBlogs(result.data || result);
       } catch (err) {
         console.error('Error fetching blog posts:', err);
         setError(err.message);
@@ -133,11 +132,10 @@ export default function BlogList() {
    */
   const confirmDelete = async (blogId) => {
     try {
-      const response = await fetch(
-        `/api/blogs/${blogId}?dealershipId=${selectedDealership.id}`,
+      const response = await apiRequest(
+        `/api/blog-posts/${blogId}?dealershipId=${selectedDealership.id}`,
         {
-          method: 'DELETE',
-          credentials: 'include'
+          method: 'DELETE'
         }
       );
 

@@ -17,8 +17,11 @@ export async function apiRequest(endpoint, options = {}) {
   
   const token = localStorage.getItem('jwt_token');
   
+  // Don't set Content-Type for FormData - browser will set it with boundary
+  const isFormData = options.body instanceof FormData;
+  
   const defaultHeaders = {
-    'Content-Type': 'application/json',
+    ...(!isFormData && { 'Content-Type': 'application/json' }),
     ...(token && { 'Authorization': `Bearer ${token}` }),
   };
 

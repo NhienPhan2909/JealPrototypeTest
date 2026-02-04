@@ -53,7 +53,11 @@ public class UsersController : ControllerBase
     [HttpGet("dealership/{dealershipId}/all")]
     public async Task<ActionResult<ApiResponse<List<UserResponseDto>>>> GetUsers(int dealershipId)
     {
-        var result = await _getUsersUseCase.ExecuteAsync(dealershipId);
+        var requestorIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(requestorIdClaim) || !int.TryParse(requestorIdClaim, out int requestorId))
+            return Unauthorized(ApiResponse<List<UserResponseDto>>.ErrorResponse("Invalid user token"));
+
+        var result = await _getUsersUseCase.ExecuteAsync(requestorId, dealershipId);
         return Ok(result);
     }
 

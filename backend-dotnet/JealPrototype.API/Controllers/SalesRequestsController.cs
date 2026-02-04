@@ -14,15 +14,18 @@ public class SalesRequestsController : ControllerBase
     private readonly CreateSalesRequestUseCase _createSalesRequestUseCase;
     private readonly GetSalesRequestsUseCase _getSalesRequestsUseCase;
     private readonly UpdateSalesRequestStatusUseCase _updateSalesRequestStatusUseCase;
+    private readonly DeleteSalesRequestUseCase _deleteSalesRequestUseCase;
 
     public SalesRequestsController(
         CreateSalesRequestUseCase createSalesRequestUseCase,
         GetSalesRequestsUseCase getSalesRequestsUseCase,
-        UpdateSalesRequestStatusUseCase updateSalesRequestStatusUseCase)
+        UpdateSalesRequestStatusUseCase updateSalesRequestStatusUseCase,
+        DeleteSalesRequestUseCase deleteSalesRequestUseCase)
     {
         _createSalesRequestUseCase = createSalesRequestUseCase;
         _getSalesRequestsUseCase = getSalesRequestsUseCase;
         _updateSalesRequestStatusUseCase = updateSalesRequestStatusUseCase;
+        _deleteSalesRequestUseCase = deleteSalesRequestUseCase;
     }
 
     [HttpPost]
@@ -54,18 +57,32 @@ public class SalesRequestsController : ControllerBase
 
     [HttpPatch("{id}/status")]
     [Authorize]
-    public async Task<ActionResult<ApiResponse<SalesRequestResponseDto>>> UpdateSalesRequestStatus(int id, [FromBody] UpdateSalesRequestStatusDto request)
+    public async Task<ActionResult<ApiResponse<SalesRequestResponseDto>>> UpdateSalesRequestStatus(int id, [FromQuery] int dealershipId, [FromBody] UpdateSalesRequestStatusDto request)
     {
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int userId))
             return Unauthorized(ApiResponse<SalesRequestResponseDto>.ErrorResponse("Invalid user token"));
 
-        // Get user's dealership ID from somewhere (this should be enhanced with proper authorization)
-        // For now, we'll use a simplified approach - in production, fetch user entity to get dealership
-        var result = await _updateSalesRequestStatusUseCase.ExecuteAsync(id, userId, request.Status);
+        var result = await _updateSalesRequestStatusUseCase.ExecuteAsync(id, dealershipId, request.Status);
         
         if (!result.Success)
             return BadRequest(result);
+
+        return Ok(result);
+    }
+
+    [HttpDelete("{id}")]
+    [Authorize]
+    public async Task<ActionResult<ApiResponse<bool>>> DeleteSalesRequest(int id, [FromQuery] int dealershipId)
+    {
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int userId))
+            return Unauthorized(ApiResponse<bool>.ErrorResponse("Invalid user token"));
+
+        var result = await _deleteSalesRequestUseCase.ExecuteAsync(id, dealershipId);
+        
+        if (!result.Success)
+            return NotFound(result);
 
         return Ok(result);
     }

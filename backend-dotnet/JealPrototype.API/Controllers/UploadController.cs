@@ -17,8 +17,29 @@ public class UploadController : ControllerBase
         _imageUploadService = imageUploadService;
     }
 
+    [HttpPost]
+    public async Task<ActionResult<object>> UploadImage(IFormFile image)
+    {
+        if (image == null || image.Length == 0)
+            return BadRequest(new { error = "No file provided" });
+
+        var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif", ".webp" };
+        var extension = Path.GetExtension(image.FileName).ToLower();
+        
+        if (!allowedExtensions.Contains(extension))
+            return BadRequest(new { error = "Invalid file type. Only images are allowed." });
+
+        if (image.Length > 10 * 1024 * 1024) // 10MB
+            return BadRequest(new { error = "File size exceeds 10MB limit" });
+
+        using var stream = image.OpenReadStream();
+        var imageUrl = await _imageUploadService.UploadImageAsync(stream, image.FileName);
+
+        return Ok(new { url = imageUrl, message = "Image uploaded successfully" });
+    }
+
     [HttpPost("image")]
-    public async Task<ActionResult<ApiResponse<string>>> UploadImage(IFormFile file)
+    public async Task<ActionResult<ApiResponse<string>>> UploadImageWithApiResponse(IFormFile file)
     {
         if (file == null || file.Length == 0)
             return BadRequest(ApiResponse<string>.ErrorResponse("No file provided"));

@@ -14,6 +14,7 @@ public class BlogPostsController : ControllerBase
     private readonly CreateBlogPostUseCase _createBlogPostUseCase;
     private readonly GetBlogPostsUseCase _getBlogPostsUseCase;
     private readonly GetBlogPostByIdUseCase _getBlogPostByIdUseCase;
+    private readonly GetBlogPostBySlugUseCase _getBlogPostBySlugUseCase;
     private readonly UpdateBlogPostUseCase _updateBlogPostUseCase;
     private readonly DeleteBlogPostUseCase _deleteBlogPostUseCase;
 
@@ -21,12 +22,14 @@ public class BlogPostsController : ControllerBase
         CreateBlogPostUseCase createBlogPostUseCase,
         GetBlogPostsUseCase getBlogPostsUseCase,
         GetBlogPostByIdUseCase getBlogPostByIdUseCase,
+        GetBlogPostBySlugUseCase getBlogPostBySlugUseCase,
         UpdateBlogPostUseCase updateBlogPostUseCase,
         DeleteBlogPostUseCase deleteBlogPostUseCase)
     {
         _createBlogPostUseCase = createBlogPostUseCase;
         _getBlogPostsUseCase = getBlogPostsUseCase;
         _getBlogPostByIdUseCase = getBlogPostByIdUseCase;
+        _getBlogPostBySlugUseCase = getBlogPostBySlugUseCase;
         _updateBlogPostUseCase = updateBlogPostUseCase;
         _deleteBlogPostUseCase = deleteBlogPostUseCase;
     }
@@ -39,7 +42,7 @@ public class BlogPostsController : ControllerBase
         if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int userId))
             return Unauthorized(ApiResponse<BlogPostResponseDto>.ErrorResponse("Invalid user token"));
 
-        var result = await _createBlogPostUseCase.ExecuteAsync(userId, request);
+        var result = await _createBlogPostUseCase.ExecuteAsync(request.DealershipId, request);
         
         if (!result.Success)
             return BadRequest(result);
@@ -53,7 +56,7 @@ public class BlogPostsController : ControllerBase
         int dealershipId, 
         [FromQuery] bool publishedOnly = false)
     {
-        var result = await _getBlogPostsUseCase.ExecuteAsync(dealershipId);
+        var result = await _getBlogPostsUseCase.ExecuteAsync(dealershipId, publishedOnly);
         return Ok(result);
     }
 
@@ -69,15 +72,27 @@ public class BlogPostsController : ControllerBase
         return Ok(result);
     }
 
+    [HttpGet("slug/{slug}")]
+    [AllowAnonymous]
+    public async Task<ActionResult<ApiResponse<BlogPostResponseDto>>> GetBlogPostBySlug(string slug, [FromQuery] int dealershipId)
+    {
+        var result = await _getBlogPostBySlugUseCase.ExecuteAsync(slug, dealershipId);
+        
+        if (!result.Success)
+            return NotFound(result);
+
+        return Ok(result);
+    }
+
     [HttpPut("{id}")]
     [Authorize]
-    public async Task<ActionResult<ApiResponse<BlogPostResponseDto>>> UpdateBlogPost(int id, [FromBody] UpdateBlogPostDto request)
+    public async Task<ActionResult<ApiResponse<BlogPostResponseDto>>> UpdateBlogPost(int id, [FromQuery] int dealershipId, [FromBody] UpdateBlogPostDto request)
     {
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int userId))
             return Unauthorized(ApiResponse<BlogPostResponseDto>.ErrorResponse("Invalid user token"));
 
-        var result = await _updateBlogPostUseCase.ExecuteAsync(id, userId, request);
+        var result = await _updateBlogPostUseCase.ExecuteAsync(id, dealershipId, request);
         
         if (!result.Success)
             return BadRequest(result);
@@ -87,13 +102,13 @@ public class BlogPostsController : ControllerBase
 
     [HttpDelete("{id}")]
     [Authorize]
-    public async Task<ActionResult<ApiResponse<object>>> DeleteBlogPost(int id)
+    public async Task<ActionResult<ApiResponse<object>>> DeleteBlogPost(int id, [FromQuery] int dealershipId)
     {
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int userId))
             return Unauthorized(ApiResponse<object>.ErrorResponse("Invalid user token"));
 
-        var result = await _deleteBlogPostUseCase.ExecuteAsync(id, userId);
+        var result = await _deleteBlogPostUseCase.ExecuteAsync(id, dealershipId);
         
         if (!result.Success)
             return BadRequest(result);

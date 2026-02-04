@@ -18,10 +18,8 @@ import apiRequest from '../../utils/api';
 function SalesRequests() {
   const { selectedDealership, user } = useContext(AdminContext);
 
-  // Check permission
-  if (!hasPermission(user, 'sales_requests')) {
-    return <Unauthorized section="Sales Requests" />;
-  }
+  // Check if user can edit sales requests (for showing/hiding action buttons)
+  const canEditSalesRequests = hasPermission(user, 'sales_requests');
 
   const [salesRequests, setSalesRequests] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -97,7 +95,7 @@ function SalesRequests() {
     const daysAgo = dateFilter === 'Last 7 days' ? 7 : 30;
     const cutoffDate = new Date(now.setDate(now.getDate() - daysAgo));
 
-    return sortedRequests.filter(request => new Date(request.created_at) >= cutoffDate);
+    return sortedRequests.filter(request => new Date(request.createdAt) >= cutoffDate);
   };
 
   /**
@@ -135,20 +133,19 @@ function SalesRequests() {
    */
   const handleStatusChange = async (requestId, newStatus) => {
     try {
-      const response = await fetch(`/api/sales-requests/${requestId}/status?dealershipId=${selectedDealership.id}`, {
+      const response = await apiRequest(`/api/sales-requests/${requestId}/status?dealershipId=${selectedDealership.id}`, {
         method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
         body: JSON.stringify({ status: newStatus })
       });
 
       if (!response.ok) {
-        throw new Error('Failed to update sales request status');
+        const errorData = await response.json();
+        console.error('Server error response:', errorData);
+        throw new Error(errorData.message || errorData.error || 'Failed to update sales request status');
       }
 
-      const updatedRequest = await response.json();
+      const result = await response.json();
+      const updatedRequest = result.data || result;
       
       setSalesRequests(salesRequests.map(request => 
         request.id === requestId ? updatedRequest : request
@@ -231,6 +228,13 @@ function SalesRequests() {
 
         {selectedDealership && (
           <>
+          {!canEditSalesRequests && (
+            <div className="bg-blue-50 border border-blue-200 text-blue-800 p-4 mb-4 rounded">
+              <p className="font-semibold">View Only Mode</p>
+              <p className="text-sm">You can view sales requests but cannot modify them. Contact your dealership owner to request edit permissions.</p>
+            </div>
+          )}
+
           <div className="flex justify-between items-center mb-4">
             <p className="text-gray-700">Showing {filteredRequests.length} sales requests</p>
             
@@ -293,15 +297,15 @@ function SalesRequests() {
                       </td>
                       <td className="px-4 py-2 border">{request.kilometers.toLocaleString()} km</td>
                       <td className="px-4 py-2 border">
-                        {request.additional_message ? (
+                        {request.additionalMessage ? (
                           <div>
                             <p>
                               {expandedRequestId === request.id 
-                                ? decodeHtmlEntities(request.additional_message)
-                                : decodeHtmlEntities(truncateMessage(request.additional_message))
+                                ? decodeHtmlEntities(request.additionalMessage)
+                                : decodeHtmlEntities(truncateMessage(request.additionalMessage))
                               }
                             </p>
-                            {request.additional_message.length > 100 && (
+                            {request.additionalMessage.length > 100 && (
                               <button
                                 onClick={() => toggleExpand(request.id)}
                                 className="text-blue-600 hover:text-blue-800 text-sm mt-1"
@@ -315,13 +319,14 @@ function SalesRequests() {
                         )}
                       </td>
                       <td className="px-4 py-2 border whitespace-nowrap">
-                        {formatDate(request.created_at)}
+                        {formatDate(request.createdAt)}
                       </td>
                       <td className="px-4 py-2 border">
                         <select
                           value={request.status || 'received'}
                           onChange={(e) => handleStatusChange(request.id, e.target.value)}
-                          className={`px-2 py-1 rounded text-sm border ${statusColors[request.status || 'received']}`}
+                          disabled={!canEditSalesRequests}
+                          className={`px-2 py-1 rounded text-sm border ${statusColors[request.status || 'received']} ${!canEditSalesRequests ? 'opacity-50 cursor-not-allowed' : ''}`}
                         >
                           <option value="received">Received</option>
                           <option value="in progress">In Progress</option>
@@ -342,12 +347,14 @@ function SalesRequests() {
                           >
                             Email
                           </a>
-                          <button
-                            onClick={() => openDeleteModal(request)}
-                            className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 text-sm"
-                          >
-                            Delete
-                          </button>
+                          {canEditSalesRequests && (
+                            <button
+                              onClick={() => openDeleteModal(request)}
+                              className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 text-sm"
+                            >
+                              Delete
+                            </button>
+                          )}
                         </div>
                       </td>
                     </tr>

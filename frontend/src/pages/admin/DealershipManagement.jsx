@@ -60,22 +60,21 @@ export default function DealershipManagement() {
     setSuccessMessage('');
 
     try {
-      const response = await fetch('/api/dealers', {
+      const response = await apiRequest('/api/dealers', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify(formData)
       });
 
       if (response.ok) {
-        const newDealership = await response.json();
+        const result = await response.json();
+        const newDealership = result.data || result;
         await fetchDealerships();
         setShowCreateForm(false);
         resetForm();
         setSuccessMessage(`Successfully created dealership: ${newDealership.name}`);
       } else {
         const errorData = await response.json();
-        setError(errorData.error || 'Failed to create dealership');
+        setError(errorData.error || errorData.message || 'Failed to create dealership');
       }
     } catch (err) {
       console.error('Create dealership error:', err);

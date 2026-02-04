@@ -34,7 +34,7 @@ public class CreateUserUseCase
             return ApiResponse<UserResponseDto>.ErrorResponse("Username already exists");
         }
 
-        var userType = request.UserType.ToLower() switch
+        var userType = request.UserType.ToLower().Replace("_", "") switch
         {
             "admin" => UserType.Admin,
             "dealershipowner" => UserType.DealershipOwner,
@@ -47,6 +47,7 @@ public class CreateUserUseCase
             "VEHICLES" => Permission.Vehicles,
             "LEADS" => Permission.Leads,
             "SALESREQUESTS" => Permission.SalesRequests,
+            "SALES_REQUESTS" => Permission.SalesRequests,
             "BLOGS" => Permission.Blogs,
             "SETTINGS" => Permission.Settings,
             _ => Permission.Vehicles
@@ -58,9 +59,9 @@ public class CreateUserUseCase
             request.Username,
             passwordHash,
             request.Email,
-            request.Username, // Using username as fullName since CreateUserDto doesn't have FullName
+            request.FullName,
             userType,
-            request.DealershipId ?? creatorDealershipId,
+            request.DealershipId,
             permissions,
             null);
 

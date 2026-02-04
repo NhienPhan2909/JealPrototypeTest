@@ -87,18 +87,19 @@ export default function UserManagement() {
     try {
       const payload = { ...formData };
       
-      // Set dealershipId based on user type
-      if (user.userType === 'dealership_owner') {
-        payload.dealershipId = user.dealershipId;
-        payload.userType = 'dealership_staff';
-      } else if (payload.userType === 'admin') {
+      // Only admins can create admin users
+      if (payload.userType === 'admin' && user.userType !== 'admin') {
+        setError('Only administrators can create admin users');
+        return;
+      }
+      
+      // Set dealershipId to null for admin users
+      if (payload.userType === 'admin') {
         payload.dealershipId = null;
       }
 
-      const response = await fetch('/api/users', {
+      const response = await apiRequest('/api/users', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify(payload)
       });
 
@@ -121,10 +122,8 @@ export default function UserManagement() {
     setError('');
 
     try {
-      const response = await fetch(`/api/users/${editingUser.id}`, {
+      const response = await apiRequest(`/api/users/${editingUser.id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify({
           email: formData.email,
           fullName: formData.fullName,
@@ -181,13 +180,16 @@ export default function UserManagement() {
   };
 
   const resetForm = () => {
+    const defaultUserType = user?.userType === 'admin' ? 'dealership_owner' : 'dealership_staff';
+    const defaultDealershipId = user?.userType === 'dealership_owner' ? user.dealershipId : '';
+    
     setFormData({
       username: '',
       password: '',
       email: '',
       fullName: '',
-      userType: user?.userType === 'admin' ? 'dealership_owner' : 'dealership_staff',
-      dealershipId: user?.userType === 'dealership_owner' ? user.dealershipId : '',
+      userType: defaultUserType,
+      dealershipId: defaultDealershipId,
       permissions: []
     });
   };
@@ -286,7 +288,7 @@ export default function UserManagement() {
                 />
               </div>
 
-              {!editingUser && user?.userType === 'admin' && (
+              {!editingUser && (
                 <>
                   <div className="mb-4">
                     <label className="block text-sm font-medium mb-2">User Type *</label>
@@ -296,25 +298,43 @@ export default function UserManagement() {
                       onChange={(e) => setFormData({ ...formData, userType: e.target.value })}
                       required
                     >
-                      <option value="dealership_owner">Dealership Owner</option>
-                      <option value="admin">Admin</option>
+                      {user?.userType === 'admin' && (
+                        <>
+                          <option value="admin">Admin</option>
+                          <option value="dealership_owner">Dealership Owner</option>
+                          <option value="dealership_staff">Dealership Staff</option>
+                        </>
+                      )}
+                      {user?.userType === 'dealership_owner' && (
+                        <option value="dealership_staff">Dealership Staff</option>
+                      )}
                     </select>
                   </div>
 
-                  {formData.userType === 'dealership_owner' && (
+                  {(formData.userType === 'dealership_owner' || formData.userType === 'dealership_staff') && (
                     <div className="mb-4">
                       <label className="block text-sm font-medium mb-2">Dealership *</label>
-                      <select
-                        className="input-field"
-                        value={formData.dealershipId}
-                        onChange={(e) => setFormData({ ...formData, dealershipId: parseInt(e.target.value) })}
-                        required
-                      >
-                        <option value="">Select Dealership</option>
-                        {dealerships.map(d => (
-                          <option key={d.id} value={d.id}>{d.name}</option>
-                        ))}
-                      </select>
+                      {user?.userType === 'admin' ? (
+                        <select
+                          className="input-field"
+                          value={formData.dealershipId}
+                          onChange={(e) => setFormData({ ...formData, dealershipId: parseInt(e.target.value) })}
+                          required
+                        >
+                          <option value="">Select Dealership</option>
+                          {dealerships.map(d => (
+                            <option key={d.id} value={d.id}>{d.name}</option>
+                          ))}
+                        </select>
+                      ) : (
+                        <input
+                          type="text"
+                          className="input-field bg-gray-100"
+                          value={selectedDealership?.name || ''}
+                          disabled
+                          readOnly
+                        />
+                      )}
                     </div>
                   )}
                 </>
@@ -389,11 +409,24 @@ export default function UserManagement() {
                       </span>
                     </td>
                     {user?.userType === 'admin' && (
-                      <td className="px-6 py-4 whitespace-nowrap">{u.dealershipName || '-'}</td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        {u.dealershipId 
+                          ? (dealerships.find(d => d.id === u.dealershipId)?.name || '-')
+                          : '-'
+                        }
+                      </td>
                     )}
                     <td className="px-6 py-4">
                       {u.userType === 'dealership_staff' ? (
-                        u.permissions?.length > 0 ? u.permissions.join(', ') : 'Read-only'
+                        u.permissions?.length > 0 ? (
+                          u.permissions.map(p => {
+                            const formatted = p.replace('_', ' ')
+                              .split(' ')
+                              .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                              .join(' ');
+                            return formatted;
+                          }).join(', ')
+                        ) : 'Read-only'
                       ) : (
                         'Full access'
                       )}

@@ -151,7 +151,7 @@ function Blog() {
                 <div className="flex items-center text-sm text-gray-500 mb-3">
                   <span>{blog.authorName}</span>
                   <span className="mx-2">•</span>
-                  <span>{formatDate(blog.published_at)}</span>
+                  <span>{formatDate(blog.publishedAt)}</span>
                 </div>
 
                 {blog.excerpt && (

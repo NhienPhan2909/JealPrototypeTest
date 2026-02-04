@@ -79,16 +79,19 @@ builder.Services.AddScoped<DeleteUserUseCase>();
 builder.Services.AddScoped<CreateLeadUseCase>();
 builder.Services.AddScoped<GetLeadsUseCase>();
 builder.Services.AddScoped<UpdateLeadStatusUseCase>();
+builder.Services.AddScoped<DeleteLeadUseCase>();
 
 // SalesRequest
 builder.Services.AddScoped<CreateSalesRequestUseCase>();
 builder.Services.AddScoped<GetSalesRequestsUseCase>();
 builder.Services.AddScoped<UpdateSalesRequestStatusUseCase>();
+builder.Services.AddScoped<DeleteSalesRequestUseCase>();
 
 // BlogPost
 builder.Services.AddScoped<CreateBlogPostUseCase>();
 builder.Services.AddScoped<GetBlogPostsUseCase>();
 builder.Services.AddScoped<GetBlogPostByIdUseCase>();
+builder.Services.AddScoped<GetBlogPostBySlugUseCase>();
 builder.Services.AddScoped<UpdateBlogPostUseCase>();
 builder.Services.AddScoped<DeleteBlogPostUseCase>();
 

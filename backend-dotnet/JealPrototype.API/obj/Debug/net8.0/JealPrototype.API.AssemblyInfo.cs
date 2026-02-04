@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("JealPrototype.API")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+406a952db23d233c57c2c826fe9af1e4e239c621")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+af8425f0e56e6d7b86ff13a95a5788e6b30c4cc0")]
 [assembly: System.Reflection.AssemblyProductAttribute("JealPrototype.API")]
 [assembly: System.Reflection.AssemblyTitleAttribute("JealPrototype.API")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

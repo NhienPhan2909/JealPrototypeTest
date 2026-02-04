@@ -16,12 +16,12 @@ export function hasPermission(user, permission) {
   if (!user) return false;
 
   // Admin and Owner have all permissions
-  if (user.userType === 'admin' || user.userType === 'dealershipOwner') {
+  if (user.userType === 'admin' || user.userType === 'dealership_owner') {
     return true;
   }
 
   // Staff users check their permissions array
-  if (user.userType === 'dealershipStaff') {
+  if (user.userType === 'dealership_staff') {
     const permissions = Array.isArray(user.permissions) ? user.permissions : [];
     return permissions.includes(permission);
   }
@@ -39,8 +39,8 @@ export function hasPermission(user, permission) {
 export function hasAnyAdminAccess(user) {
   if (!user) return false;
   return user.userType === 'admin' || 
-         user.userType === 'dealershipOwner' || 
-         user.userType === 'dealershipStaff';
+         user.userType === 'dealership_owner' || 
+         user.userType === 'dealership_staff';
 }
 
 /**
@@ -53,12 +53,12 @@ export function getUserPermissions(user) {
   if (!user) return [];
 
   // Admin and Owner have all permissions
-  if (user.userType === 'admin' || user.userType === 'dealershipOwner') {
+  if (user.userType === 'admin' || user.userType === 'dealership_owner') {
     return ['leads', 'sales_requests', 'vehicles', 'blogs', 'settings'];
   }
 
   // Staff users return their specific permissions
-  if (user.userType === 'dealershipStaff') {
+  if (user.userType === 'dealership_staff') {
     return Array.isArray(user.permissions) ? user.permissions : [];
   }
 
@@ -82,7 +82,7 @@ export function isAdmin(user) {
  * @returns {boolean} True if user is owner
  */
 export function isOwner(user) {
-  return user?.userType === 'dealershipOwner';
+  return user?.userType === 'dealership_owner';
 }
 
 /**
@@ -92,7 +92,7 @@ export function isOwner(user) {
  * @returns {boolean} True if user is staff
  */
 export function isStaff(user) {
-  return user?.userType === 'dealershipStaff';
+  return user?.userType === 'dealership_staff';
 }
 
 /**
@@ -103,5 +103,5 @@ export function isStaff(user) {
  * @returns {boolean} True if user can manage users
  */
 export function canManageUsers(user) {
-  return user?.userType === 'admin' || user?.userType === 'dealershipOwner';
+  return user?.userType === 'admin' || user?.userType === 'dealership_owner';
 }

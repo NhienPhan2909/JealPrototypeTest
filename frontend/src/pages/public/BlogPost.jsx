@@ -44,7 +44,7 @@ function BlogPost() {
         setError(null);
 
         const response = await fetch(
-          `/api/blogs/slug/${slug}?dealershipId=${currentDealershipId}`
+          `/api/blog-posts/slug/${slug}?dealershipId=${currentDealershipId}`
         );
 
         if (!response.ok) {
@@ -54,14 +54,15 @@ function BlogPost() {
           throw new Error('Failed to fetch blog post');
         }
 
-        const data = await response.json();
+        const result = await response.json();
+        const blogData = result.data || result;
         
         // Only show published posts on public site
-        if (data.status !== 'published') {
+        if (blogData.status !== 'published') {
           throw new Error('Blog post not found');
         }
 
-        setBlog(data);
+        setBlog(blogData);
       } catch (err) {
         console.error('Error fetching blog post:', err);
         setError(err.message);
@@ -150,7 +151,7 @@ function BlogPost() {
           <div>
             <p className="font-medium text-gray-900">{blog.authorName}</p>
             <p className="text-sm text-gray-500">
-              {formatDate(blog.published_at)}
+              {formatDate(blog.publishedAt)}
             </p>
           </div>
         </div>

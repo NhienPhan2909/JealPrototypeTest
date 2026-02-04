@@ -124,9 +124,19 @@ export function isValidNavigationConfig(navigationConfig) {
  * Gets validated navigation config with fallback to defaults.
  * Returns the provided navigation config if valid, otherwise returns default navigation.
  *
- * @param {Array<Object>|null} navigationConfig - Navigation config from API
+ * @param {Array<Object>|string|null} navigationConfig - Navigation config from API (can be JSON string or array)
  * @returns {Array<Object>} Valid navigation config or default
  */
 export function getValidatedNavigation(navigationConfig) {
+  // If it's a string, try to parse it as JSON
+  if (typeof navigationConfig === 'string') {
+    try {
+      navigationConfig = JSON.parse(navigationConfig);
+    } catch (e) {
+      console.error('Failed to parse navigation config:', e);
+      return defaultNavigation;
+    }
+  }
+  
   return isValidNavigationConfig(navigationConfig) ? navigationConfig : defaultNavigation;
 }

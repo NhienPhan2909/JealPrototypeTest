@@ -39,7 +39,9 @@ function Header() {
   const themeColor = dealership?.themeColor || '#3B82F6';
 
   // Get navigation config with validation and fallback to defaults
-  const navigationConfig = getValidatedNavigation(dealership?.navigation_config);
+  const navigationConfig = getValidatedNavigation(
+    dealership?.navigationConfig || dealership?.navigation_config
+  );
 
   // Sort by order field and filter enabled items
   const enabledNavItems = navigationConfig

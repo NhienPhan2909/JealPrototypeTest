@@ -19,13 +19,13 @@ public class MappingProfile : Profile
         // User mappings
         CreateMap<User, UserDto>()
             .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email.Value))
-            .ForMember(dest => dest.UserType, opt => opt.MapFrom(src => src.UserType.ToString().ToLower()))
-            .ForMember(dest => dest.Permissions, opt => opt.MapFrom(src => src.Permissions.Select(p => p.ToString().ToLower()).ToList()));
+            .ForMember(dest => dest.UserType, opt => opt.MapFrom(src => ConvertUserTypeToString(src.UserType)))
+            .ForMember(dest => dest.Permissions, opt => opt.MapFrom(src => src.Permissions.Select(p => ConvertPermissionToString(p)).ToList()));
 
         CreateMap<User, UserResponseDto>()
             .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email.Value))
-            .ForMember(dest => dest.UserType, opt => opt.MapFrom(src => src.UserType.ToString().ToLower()))
-            .ForMember(dest => dest.Permissions, opt => opt.MapFrom(src => src.Permissions.Select(p => p.ToString().ToLower()).ToList()));
+            .ForMember(dest => dest.UserType, opt => opt.MapFrom(src => ConvertUserTypeToString(src.UserType)))
+            .ForMember(dest => dest.Permissions, opt => opt.MapFrom(src => src.Permissions.Select(p => ConvertPermissionToString(p)).ToList()));
 
         // Dealership mappings
         CreateMap<Dealership, DealershipResponseDto>()
@@ -53,5 +53,29 @@ public class MappingProfile : Profile
         // BlogPost mappings
         CreateMap<BlogPost, BlogPostResponseDto>()
             .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString().ToLower()));
+    }
+
+    private static string ConvertUserTypeToString(UserType userType)
+    {
+        return userType switch
+        {
+            UserType.Admin => "admin",
+            UserType.DealershipOwner => "dealership_owner",
+            UserType.DealershipStaff => "dealership_staff",
+            _ => userType.ToString().ToLower()
+        };
+    }
+
+    private static string ConvertPermissionToString(Permission permission)
+    {
+        return permission switch
+        {
+            Permission.Leads => "leads",
+            Permission.SalesRequests => "sales_requests",
+            Permission.Vehicles => "vehicles",
+            Permission.Blogs => "blogs",
+            Permission.Settings => "settings",
+            _ => permission.ToString().ToLower()
+        };
     }
 }

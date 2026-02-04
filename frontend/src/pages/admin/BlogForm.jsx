@@ -98,9 +98,8 @@ function BlogForm() {
         setFetchingBlog(true);
         setError(null);
 
-        const response = await fetch(
-          `/api/blogs/${id}?dealershipId=${selectedDealership.id}`,
-          { credentials: 'include' }
+        const response = await apiRequest(
+          `/api/blog-posts/${id}?dealershipId=${selectedDealership.id}`
         );
 
         if (!response.ok) {
@@ -110,7 +109,8 @@ function BlogForm() {
           throw new Error('Failed to fetch blog post data');
         }
 
-        const blog = await response.json();
+        const result = await response.json();
+        const blog = result.data || result;
 
         reset({
           title: blog.title,
@@ -217,22 +217,18 @@ function BlogForm() {
 
       if (isEditMode) {
         // Edit mode: PUT request with dealershipId query parameter
-        response = await fetch(
-          `/api/blogs/${id}?dealershipId=${selectedDealership.id}`,
+        response = await apiRequest(
+          `/api/blog-posts/${id}?dealershipId=${selectedDealership.id}`,
           {
             method: 'PUT',
-            credentials: 'include',
-            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(blogData)
           }
         );
       } else {
         // Create mode: POST request with dealershipId in body
         blogData.dealershipId = selectedDealership.id;
-        response = await fetch('/api/blogs', {
+        response = await apiRequest('/api/blog-posts', {
           method: 'POST',
-          credentials: 'include',
-          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(blogData)
         });
       }

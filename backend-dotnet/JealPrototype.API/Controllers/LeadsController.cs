@@ -14,15 +14,18 @@ public class LeadsController : ControllerBase
     private readonly CreateLeadUseCase _createLeadUseCase;
     private readonly GetLeadsUseCase _getLeadsUseCase;
     private readonly UpdateLeadStatusUseCase _updateLeadStatusUseCase;
+    private readonly DeleteLeadUseCase _deleteLeadUseCase;
 
     public LeadsController(
         CreateLeadUseCase createLeadUseCase,
         GetLeadsUseCase getLeadsUseCase,
-        UpdateLeadStatusUseCase updateLeadStatusUseCase)
+        UpdateLeadStatusUseCase updateLeadStatusUseCase,
+        DeleteLeadUseCase deleteLeadUseCase)
     {
         _createLeadUseCase = createLeadUseCase;
         _getLeadsUseCase = getLeadsUseCase;
         _updateLeadStatusUseCase = updateLeadStatusUseCase;
+        _deleteLeadUseCase = deleteLeadUseCase;
     }
 
     [HttpPost]
@@ -54,16 +57,32 @@ public class LeadsController : ControllerBase
 
     [HttpPatch("{id}/status")]
     [Authorize]
-    public async Task<ActionResult<ApiResponse<LeadResponseDto>>> UpdateLeadStatus(int id, [FromBody] UpdateLeadStatusDto request)
+    public async Task<ActionResult<ApiResponse<LeadResponseDto>>> UpdateLeadStatus(int id, [FromQuery] int dealershipId, [FromBody] UpdateLeadStatusDto request)
     {
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int userId))
             return Unauthorized(ApiResponse<LeadResponseDto>.ErrorResponse("Invalid user token"));
 
-        var result = await _updateLeadStatusUseCase.ExecuteAsync(id, userId, request);
+        var result = await _updateLeadStatusUseCase.ExecuteAsync(id, dealershipId, request);
         
         if (!result.Success)
             return BadRequest(result);
+
+        return Ok(result);
+    }
+
+    [HttpDelete("{id}")]
+    [Authorize]
+    public async Task<ActionResult<ApiResponse<bool>>> DeleteLead(int id, [FromQuery] int dealershipId)
+    {
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int userId))
+            return Unauthorized(ApiResponse<bool>.ErrorResponse("Invalid user token"));
+
+        var result = await _deleteLeadUseCase.ExecuteAsync(id, dealershipId);
+        
+        if (!result.Success)
+            return NotFound(result);
 
         return Ok(result);
     }

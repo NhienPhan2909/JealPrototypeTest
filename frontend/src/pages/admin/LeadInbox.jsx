@@ -104,7 +104,8 @@ function LeadInbox() {
         const response = await apiRequest(`/api/vehicles/${vehicleId}?dealershipId=${selectedDealership.id}`);
 
         if (response.ok) {
-          const vehicle = await response.json();
+          const result = await response.json();
+          const vehicle = result.data || result;
           titleMap[vehicleId] = vehicle.title;
         }
       } catch (err) {
@@ -146,7 +147,7 @@ function LeadInbox() {
     const daysAgo = dateFilter === 'Last 7 days' ? 7 : 30;
     const cutoffDate = new Date(now.setDate(now.getDate() - daysAgo));
 
-    return sortedLeads.filter(lead => new Date(lead.created_at) >= cutoffDate);
+    return sortedLeads.filter(lead => new Date(lead.createdAt) >= cutoffDate);
   };
 
   /**
@@ -191,20 +192,19 @@ function LeadInbox() {
    */
   const handleStatusChange = async (leadId, newStatus) => {
     try {
-      const response = await fetch(`/api/leads/${leadId}/status?dealershipId=${selectedDealership.id}`, {
+      const response = await apiRequest(`/api/leads/${leadId}/status?dealershipId=${selectedDealership.id}`, {
         method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
         body: JSON.stringify({ status: newStatus })
       });
 
       if (!response.ok) {
-        throw new Error('Failed to update lead status');
+        const errorData = await response.json();
+        console.error('Server error response:', errorData);
+        throw new Error(errorData.message || errorData.error || 'Failed to update lead status');
       }
 
-      const updatedLead = await response.json();
+      const result = await response.json();
+      const updatedLead = result.data || result;
       
       // Update lead in local state
       setLeads(leads.map(lead => 
@@ -393,7 +393,7 @@ function LeadInbox() {
                         </div>
                       </td>
                       <td className="px-4 py-2 border whitespace-nowrap">
-                        {formatDate(lead.created_at)}
+                        {formatDate(lead.createdAt)}
                       </td>
                       <td className="px-4 py-2 border">
                         <select

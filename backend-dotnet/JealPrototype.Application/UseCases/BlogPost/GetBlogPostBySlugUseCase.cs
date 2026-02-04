@@ -5,31 +5,31 @@ using JealPrototype.Domain.Interfaces;
 
 namespace JealPrototype.Application.UseCases.BlogPost;
 
-public class GetBlogPostsUseCase
+public class GetBlogPostBySlugUseCase
 {
     private readonly IBlogPostRepository _blogPostRepository;
     private readonly IMapper _mapper;
 
-    public GetBlogPostsUseCase(IBlogPostRepository blogPostRepository, IMapper mapper)
+    public GetBlogPostBySlugUseCase(IBlogPostRepository blogPostRepository, IMapper mapper)
     {
         _blogPostRepository = blogPostRepository;
         _mapper = mapper;
     }
 
-    public async Task<ApiResponse<List<BlogPostResponseDto>>> ExecuteAsync(
+    public async Task<ApiResponse<BlogPostResponseDto>> ExecuteAsync(
+        string slug,
         int dealershipId,
-        bool publishedOnly = false,
         CancellationToken cancellationToken = default)
     {
         var blogPosts = await _blogPostRepository.GetByDealershipIdAsync(dealershipId, cancellationToken);
-        
-        if (publishedOnly)
-        {
-            blogPosts = blogPosts.Where(bp => bp.Status == Domain.Enums.BlogPostStatus.Published);
-        }
-        
-        var response = _mapper.Map<List<BlogPostResponseDto>>(blogPosts);
+        var blogPost = blogPosts.FirstOrDefault(bp => bp.Slug == slug);
 
-        return ApiResponse<List<BlogPostResponseDto>>.SuccessResponse(response);
+        if (blogPost == null)
+        {
+            return ApiResponse<BlogPostResponseDto>.ErrorResponse("Blog post not found");
+        }
+
+        var response = _mapper.Map<BlogPostResponseDto>(blogPost);
+        return ApiResponse<BlogPostResponseDto>.SuccessResponse(response);
     }
 }

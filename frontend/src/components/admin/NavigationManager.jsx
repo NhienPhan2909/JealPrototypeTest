@@ -19,9 +19,24 @@ import { FaPlus } from 'react-icons/fa';
 import apiRequest from '../../utils/api';
 
 function NavigationManager({ dealership, onSave }) {
-  const [navItems, setNavItems] = useState(
-    dealership.navigation_config || defaultNavigation
-  );
+  const [navItems, setNavItems] = useState(() => {
+    try {
+      // Try to parse navigationConfig (camelCase from .NET)
+      if (dealership.navigationConfig) {
+        return JSON.parse(dealership.navigationConfig);
+      }
+      // Fallback to snake_case for backwards compatibility
+      if (dealership.navigation_config) {
+        return typeof dealership.navigation_config === 'string' 
+          ? JSON.parse(dealership.navigation_config)
+          : dealership.navigation_config;
+      }
+      return defaultNavigation;
+    } catch (e) {
+      console.error('Error parsing navigation config:', e);
+      return defaultNavigation;
+    }
+  });
   const [isSaving, setIsSaving] = useState(false);
   const [message, setMessage] = useState(null);
 
@@ -135,11 +150,9 @@ function NavigationManager({ dealership, onSave }) {
     setMessage(null);
 
     try {
-      const response = await fetch(`/api/dealers/${dealership.id}`, {
+      const response = await apiRequest(`/api/dealers/${dealership.id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ navigation_config: navItems })
+        body: JSON.stringify({ navigationConfig: JSON.stringify(navItems) })
       });
 
       if (response.ok) {
@@ -184,7 +197,7 @@ function NavigationManager({ dealership, onSave }) {
           className="rounded-lg p-4 shadow overflow-x-auto"
           style={{ backgroundColor: dealership.themeColor || '#3B82F6' }}
         >
-          <nav className="flex gap-6 justify-center flex-wrap">
+          <nav className="flex gap-6 flex-wrap">
             {navItems.filter(item => item.enabled).map(item => (
               <div key={item.id} onClick={(e) => e.preventDefault()}>
                 <NavigationButton
