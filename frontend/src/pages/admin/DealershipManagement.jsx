@@ -160,7 +160,7 @@ export default function DealershipManagement() {
     let aValue = a[sortBy];
     let bValue = b[sortBy];
 
-    if (sortBy === 'created_at') {
+    if (sortBy === 'createdAt') {
       aValue = new Date(aValue).getTime();
       bValue = new Date(bValue).getTime();
     } else if (sortBy === 'id') {
@@ -429,11 +429,11 @@ export default function DealershipManagement() {
                       </th>
                       <th 
                         className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
-                        onClick={() => handleSort('created_at')}
+                        onClick={() => handleSort('createdAt')}
                       >
                         <div className="flex items-center">
                           Created
-                          {sortBy === 'created_at' && (
+                          {sortBy === 'createdAt' && (
                             <span className="ml-1">{sortOrder === 'asc' ? '↑' : '↓'}</span>
                           )}
                         </div>
@@ -462,7 +462,7 @@ export default function DealershipManagement() {
                           {dealership.phone}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                          {new Date(dealership.created_at).toLocaleDateString()}
+                          {new Date(dealership.createdAt).toLocaleDateString()}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                           <button

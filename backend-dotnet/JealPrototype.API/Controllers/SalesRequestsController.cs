@@ -1,3 +1,5 @@
+using JealPrototype.API.Extensions;
+using JealPrototype.API.Filters;
 using JealPrototype.Application.DTOs.Common;
 using JealPrototype.Application.DTOs.SalesRequest;
 using JealPrototype.Application.UseCases.SalesRequest;
@@ -41,6 +43,7 @@ public class SalesRequestsController : ControllerBase
 
     [HttpGet("dealership/{dealershipId}")]
     [Authorize]
+    [RequireDealershipAccess("dealershipId", DealershipAccessSource.Route, RequireAuthentication = true)]
     public async Task<ActionResult<ApiResponse<List<SalesRequestResponseDto>>>> GetSalesRequests(int dealershipId)
     {
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -57,6 +60,7 @@ public class SalesRequestsController : ControllerBase
 
     [HttpPatch("{id}/status")]
     [Authorize]
+    [RequireDealershipAccess("dealershipId", DealershipAccessSource.Query, RequireAuthentication = true)]
     public async Task<ActionResult<ApiResponse<SalesRequestResponseDto>>> UpdateSalesRequestStatus(int id, [FromQuery] int dealershipId, [FromBody] UpdateSalesRequestStatusDto request)
     {
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -73,6 +77,7 @@ public class SalesRequestsController : ControllerBase
 
     [HttpDelete("{id}")]
     [Authorize]
+    [RequireDealershipAccess("dealershipId", DealershipAccessSource.Query, RequireAuthentication = true)]
     public async Task<ActionResult<ApiResponse<bool>>> DeleteSalesRequest(int id, [FromQuery] int dealershipId)
     {
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;

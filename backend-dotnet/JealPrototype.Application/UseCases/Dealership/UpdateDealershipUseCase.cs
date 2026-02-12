@@ -51,7 +51,7 @@ public class UpdateDealershipUseCase
         if (request.WarrantyPolicy != null)
             dealership.UpdateWarrantyPolicy(request.WarrantyPolicy);
 
-        if (!string.IsNullOrWhiteSpace(request.HeroType) || request.HeroBackgroundImage != null || request.HeroVideoUrl != null || request.HeroCarouselImages != null)
+        if (!string.IsNullOrWhiteSpace(request.HeroType) || request.HeroBackgroundImage != null || request.HeroVideoUrl != null || request.HeroCarouselImages != null || request.HeroTitle != null || request.HeroSubtitle != null)
         {
             var heroType = !string.IsNullOrWhiteSpace(request.HeroType)
                 ? request.HeroType.ToLower() switch
@@ -63,7 +63,13 @@ public class UpdateDealershipUseCase
                 }
                 : dealership.HeroType;
             
-            dealership.UpdateHeroSettings(heroType, request.HeroBackgroundImage, request.HeroVideoUrl, request.HeroCarouselImages);
+            dealership.UpdateHeroSettings(
+                heroType, 
+                request.HeroBackgroundImage, 
+                request.HeroVideoUrl, 
+                request.HeroCarouselImages,
+                request.HeroTitle,
+                request.HeroSubtitle);
         }
 
         if (!string.IsNullOrWhiteSpace(request.ThemeColor) || !string.IsNullOrWhiteSpace(request.SecondaryThemeColor) || 

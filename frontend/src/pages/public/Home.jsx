@@ -52,15 +52,17 @@ function Home() {
       {dealership?.heroType === 'carousel' && dealership?.heroCarouselImages?.length > 0 ? (
         // Carousel Hero
         <HeroCarousel images={dealership.heroCarouselImages}>
-          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 drop-shadow-lg">
-            {dealership?.name || 'Welcome'}
-          </h1>
+          {dealership?.heroTitle && (
+            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 drop-shadow-lg">
+              {dealership.heroTitle}
+            </h1>
+          )}
 
-          <p className="text-lg md:text-xl mb-8 max-w-2xl mx-auto drop-shadow-md">
-            {dealership?.about
-              ? dealership.about.substring(0, 150) + (dealership.about.length > 150 ? '...' : '')
-              : 'Quality vehicles at great prices. Browse our inventory to find your next car.'}
-          </p>
+          {dealership?.heroSubtitle && (
+            <p className="text-lg md:text-xl mb-8 max-w-2xl mx-auto drop-shadow-md">
+              {dealership.heroSubtitle}
+            </p>
+          )}
 
           <Link
             to="/inventory"
@@ -90,15 +92,17 @@ function Home() {
 
           {/* Content */}
           <div className="container mx-auto px-4 text-center relative z-10">
-            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 drop-shadow-lg">
-              {dealership?.name || 'Welcome'}
-            </h1>
+            {dealership?.heroTitle && (
+              <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 drop-shadow-lg">
+                {dealership.heroTitle}
+              </h1>
+            )}
 
-            <p className="text-lg md:text-xl mb-8 max-w-2xl mx-auto drop-shadow-md">
-              {dealership?.about
-                ? dealership.about.substring(0, 150) + (dealership.about.length > 150 ? '...' : '')
-                : 'Quality vehicles at great prices. Browse our inventory to find your next car.'}
-            </p>
+            {dealership?.heroSubtitle && (
+              <p className="text-lg md:text-xl mb-8 max-w-2xl mx-auto drop-shadow-md">
+                {dealership.heroSubtitle}
+              </p>
+            )}
 
             <Link
               to="/inventory"
@@ -125,15 +129,17 @@ function Home() {
           }
         >
           <div className="container mx-auto px-4 text-center relative z-10">
-            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 drop-shadow-lg">
-              {dealership?.name || 'Welcome'}
-            </h1>
+            {dealership?.heroTitle && (
+              <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 drop-shadow-lg">
+                {dealership.heroTitle}
+              </h1>
+            )}
 
-            <p className="text-lg md:text-xl mb-8 max-w-2xl mx-auto drop-shadow-md">
-              {dealership?.about
-                ? dealership.about.substring(0, 150) + (dealership.about.length > 150 ? '...' : '')
-                : 'Quality vehicles at great prices. Browse our inventory to find your next car.'}
-            </p>
+            {dealership?.heroSubtitle && (
+              <p className="text-lg md:text-xl mb-8 max-w-2xl mx-auto drop-shadow-md">
+                {dealership.heroSubtitle}
+              </p>
+            )}
 
             <Link
               to="/inventory"

@@ -11,6 +11,9 @@ using JealPrototype.Application.UseCases.Vehicle;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Add environment variable support
+builder.Configuration.AddEnvironmentVariables();
+
 // Add CORS
 builder.Services.AddCors(options =>
 {

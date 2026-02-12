@@ -1,3 +1,5 @@
+using JealPrototype.API.Extensions;
+using JealPrototype.API.Filters;
 using JealPrototype.Application.DTOs.Common;
 using JealPrototype.Application.DTOs.Lead;
 using JealPrototype.Application.UseCases.Lead;
@@ -41,6 +43,7 @@ public class LeadsController : ControllerBase
 
     [HttpGet("dealership/{dealershipId}")]
     [Authorize]
+    [RequireDealershipAccess("dealershipId", DealershipAccessSource.Route, RequireAuthentication = true)]
     public async Task<ActionResult<ApiResponse<List<LeadResponseDto>>>> GetLeads(int dealershipId)
     {
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -57,6 +60,7 @@ public class LeadsController : ControllerBase
 
     [HttpPatch("{id}/status")]
     [Authorize]
+    [RequireDealershipAccess("dealershipId", DealershipAccessSource.Query, RequireAuthentication = true)]
     public async Task<ActionResult<ApiResponse<LeadResponseDto>>> UpdateLeadStatus(int id, [FromQuery] int dealershipId, [FromBody] UpdateLeadStatusDto request)
     {
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -73,6 +77,7 @@ public class LeadsController : ControllerBase
 
     [HttpDelete("{id}")]
     [Authorize]
+    [RequireDealershipAccess("dealershipId", DealershipAccessSource.Query, RequireAuthentication = true)]
     public async Task<ActionResult<ApiResponse<bool>>> DeleteLead(int id, [FromQuery] int dealershipId)
     {
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;

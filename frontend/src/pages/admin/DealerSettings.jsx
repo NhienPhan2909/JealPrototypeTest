@@ -37,6 +37,8 @@ function DealerSettings() {
   const [heroType, setHeroType] = useState('image');
   const [heroVideoUrl, setHeroVideoUrl] = useState('');
   const [heroCarouselImages, setHeroCarouselImages] = useState([]);
+  const [heroTitle, setHeroTitle] = useState('');
+  const [heroSubtitle, setHeroSubtitle] = useState('');
   const [themeColor, setThemeColor] = useState('#3B82F6');
   const [secondaryThemeColor, setSecondaryThemeColor] = useState('#FFFFFF');
   const [bodyBackgroundColor, setBodyBackgroundColor] = useState('#FFFFFF');
@@ -100,6 +102,8 @@ function DealerSettings() {
             setHeroType(data.heroType || 'image');
             setHeroVideoUrl(data.heroVideoUrl || '');
             setHeroCarouselImages(data.heroCarouselImages || []);
+            setHeroTitle(data.heroTitle || '');
+            setHeroSubtitle(data.heroSubtitle || '');
             setThemeColor(data.themeColor || '#3B82F6');
             setSecondaryThemeColor(data.secondaryThemeColor || '#FFFFFF');
             setBodyBackgroundColor(data.bodyBackgroundColor || '#FFFFFF');
@@ -539,6 +543,8 @@ function DealerSettings() {
       heroType: heroType,
       heroVideoUrl: heroVideoUrl || null,
       heroCarouselImages: heroCarouselImages,
+      heroTitle: heroTitle || null,
+      heroSubtitle: heroSubtitle || null,
       themeColor: themeColor,
       secondaryThemeColor: secondaryThemeColor,
       bodyBackgroundColor: bodyBackgroundColor,
@@ -1137,6 +1143,54 @@ function DealerSettings() {
                   )}
                 </div>
               )}
+            </div>
+
+            {/* Hero Text Content */}
+            <div className="border-t pt-4 mt-4">
+              <h2 className="text-xl font-bold mb-4">Hero Text Content</h2>
+              <p className="text-sm text-gray-600 mb-4">
+                Customize the text displayed on your hero section. Leave blank to hide the text.
+              </p>
+              
+              {/* Hero Title */}
+              <div className="mb-4">
+                <label htmlFor="heroTitle" className="block font-medium mb-1">
+                  Hero Title (Optional)
+                </label>
+                <p className="text-sm text-gray-600 mb-2">
+                  Leave blank to show no title on the hero section
+                </p>
+                <input
+                  id="heroTitle"
+                  type="text"
+                  className="input-field w-full"
+                  value={heroTitle}
+                  onChange={(e) => setHeroTitle(e.target.value)}
+                  disabled={loading || !canEditSettings}
+                  placeholder="e.g., Hot Spot Autos"
+                  maxLength={100}
+                />
+              </div>
+
+              {/* Hero Subtitle */}
+              <div>
+                <label htmlFor="heroSubtitle" className="block font-medium mb-1">
+                  Hero Subtitle (Optional)
+                </label>
+                <p className="text-sm text-gray-600 mb-2">
+                  Leave blank to show no subtitle on the hero section
+                </p>
+                <textarea
+                  id="heroSubtitle"
+                  rows="3"
+                  className="input-field w-full"
+                  value={heroSubtitle}
+                  onChange={(e) => setHeroSubtitle(e.target.value)}
+                  disabled={loading || !canEditSettings}
+                  placeholder="e.g., Quality vehicles at great prices. Browse our inventory to find your next car."
+                  maxLength={300}
+                />
+              </div>
             </div>
 
             {/* Address */}

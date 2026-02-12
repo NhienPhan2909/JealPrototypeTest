@@ -16,6 +16,8 @@ public class UpdateDealershipDto
     public string? HeroType { get; set; }
     public string? HeroVideoUrl { get; set; }
     public List<string>? HeroCarouselImages { get; set; }
+    public string? HeroTitle { get; set; }
+    public string? HeroSubtitle { get; set; }
     public string? ThemeColor { get; set; }
     public string? SecondaryThemeColor { get; set; }
     public string? BodyBackgroundColor { get; set; }

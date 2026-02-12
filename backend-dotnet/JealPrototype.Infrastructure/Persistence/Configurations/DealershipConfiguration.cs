@@ -75,6 +75,12 @@ public class DealershipConfiguration : IEntityTypeConfiguration<Dealership>
             .HasColumnType("jsonb")
             .HasDefaultValueSql("'[]'::jsonb");
 
+        builder.Property(d => d.HeroTitle)
+            .HasColumnName("hero_title");
+
+        builder.Property(d => d.HeroSubtitle)
+            .HasColumnName("hero_subtitle");
+
         builder.Property(d => d.ThemeColor)
             .IsRequired()
             .HasMaxLength(7)

@@ -1,3 +1,5 @@
+using JealPrototype.API.Extensions;
+using JealPrototype.API.Filters;
 using JealPrototype.Application.DTOs.Common;
 using JealPrototype.Application.DTOs.Vehicle;
 using JealPrototype.Application.UseCases.Vehicle;
@@ -51,6 +53,7 @@ public class VehiclesController : ControllerBase
     }
 
     [HttpGet]
+    [RequireDealershipAccess("dealershipId", DealershipAccessSource.Query)]
     public async Task<ActionResult<PagedResponse<VehicleResponseDto>>> GetVehicles([FromQuery] int dealershipId, [FromQuery] VehicleFilterDto filter)
     {
         var result = await _getVehiclesUseCase.ExecuteAsync(dealershipId, filter);
@@ -58,6 +61,7 @@ public class VehiclesController : ControllerBase
     }
 
     [HttpGet("{id}")]
+    [RequireDealershipAccess("dealershipId", DealershipAccessSource.Query)]
     public async Task<ActionResult<ApiResponse<VehicleResponseDto>>> GetVehicle(int id, [FromQuery] int dealershipId)
     {
         var result = await _getVehicleByIdUseCase.ExecuteAsync(id, dealershipId);
@@ -69,6 +73,7 @@ public class VehiclesController : ControllerBase
     }
 
     [HttpGet("dealership/{dealershipId}")]
+    [RequireDealershipAccess("dealershipId", DealershipAccessSource.Route)]
     public async Task<ActionResult<PagedResponse<VehicleResponseDto>>> GetDealershipVehicles(int dealershipId, [FromQuery] VehicleFilterDto filter)
     {
         var result = await _getVehiclesUseCase.ExecuteAsync(dealershipId, filter);
@@ -77,6 +82,7 @@ public class VehiclesController : ControllerBase
 
     [HttpPut("{id}")]
     [Authorize]
+    [RequireDealershipAccess("dealershipId", DealershipAccessSource.Query, RequireAuthentication = true)]
     public async Task<ActionResult<ApiResponse<VehicleResponseDto>>> UpdateVehicle(int id, [FromQuery] int dealershipId, [FromBody] UpdateVehicleDto request)
     {
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -93,6 +99,7 @@ public class VehiclesController : ControllerBase
 
     [HttpDelete("{id}")]
     [Authorize]
+    [RequireDealershipAccess("dealershipId", DealershipAccessSource.Query, RequireAuthentication = true)]
     public async Task<ActionResult<ApiResponse<object>>> DeleteVehicle(int id, [FromQuery] int dealershipId)
     {
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;

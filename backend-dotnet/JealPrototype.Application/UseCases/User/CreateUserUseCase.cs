@@ -24,9 +24,58 @@ public class CreateUserUseCase
 
     public async Task<ApiResponse<UserResponseDto>> ExecuteAsync(
         CreateUserDto request,
-        int creatorDealershipId,
+        int creatorId,
         CancellationToken cancellationToken = default)
     {
+        // Fetch creator to validate authorization
+        var creator = await _userRepository.GetByIdAsync(creatorId, cancellationToken);
+        if (creator == null)
+        {
+            return ApiResponse<UserResponseDto>.ErrorResponse("Creator not found");
+        }
+
+        // Determine target user type (with privilege restrictions)
+        var targetUserType = request.UserType.ToLower().Replace("_", "") switch
+        {
+            "admin" => UserType.Admin,
+            "dealershipowner" => UserType.DealershipOwner,
+            "dealershipstaff" => UserType.DealershipStaff,
+            _ => UserType.DealershipStaff
+        };
+
+        // PRIVILEGE ESCALATION PREVENTION: Only Admin can create Admin users
+        if (targetUserType == UserType.Admin && creator.UserType != UserType.Admin)
+        {
+            return ApiResponse<UserResponseDto>.ErrorResponse(
+                "Only system administrators can create admin users");
+        }
+
+        // PRIVILEGE ESCALATION PREVENTION: Only Admin can create DealershipOwner users
+        if (targetUserType == UserType.DealershipOwner && creator.UserType != UserType.Admin)
+        {
+            return ApiResponse<UserResponseDto>.ErrorResponse(
+                "Only system administrators can create dealership owners");
+        }
+
+        // If creator is not Admin, new user must be in same dealership
+        if (creator.UserType != UserType.Admin)
+        {
+            if (!creator.DealershipId.HasValue)
+            {
+                return ApiResponse<UserResponseDto>.ErrorResponse("Creator has no dealership association");
+            }
+
+            // Force new user to be in creator's dealership
+            if (request.DealershipId.HasValue && request.DealershipId.Value != creator.DealershipId.Value)
+            {
+                return ApiResponse<UserResponseDto>.ErrorResponse(
+                    "You can only create users for your own dealership");
+            }
+
+            // Ensure dealership ID is set
+            request.DealershipId = creator.DealershipId.Value;
+        }
+
         // Check if username already exists
         var existingUser = await _userRepository.GetByUsernameAsync(request.Username, cancellationToken);
         if (existingUser != null)
@@ -34,13 +83,7 @@ public class CreateUserUseCase
             return ApiResponse<UserResponseDto>.ErrorResponse("Username already exists");
         }
 
-        var userType = request.UserType.ToLower().Replace("_", "") switch
-        {
-            "admin" => UserType.Admin,
-            "dealershipowner" => UserType.DealershipOwner,
-            "dealershipstaff" => UserType.DealershipStaff,
-            _ => UserType.DealershipStaff
-        };
+        var userType = targetUserType;
 
         var permissions = request.Permissions?.Select(p => p.ToUpper() switch
         {

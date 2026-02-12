@@ -21,6 +21,8 @@ public class Dealership : BaseEntity
     public HeroType HeroType { get; private set; } = HeroType.Image;
     public string? HeroVideoUrl { get; private set; }
     public List<string> HeroCarouselImages { get; private set; } = new();
+    public string? HeroTitle { get; private set; }
+    public string? HeroSubtitle { get; private set; }
     
     public HexColor ThemeColor { get; private set; } = null!;
     public HexColor SecondaryThemeColor { get; private set; } = null!;
@@ -108,12 +110,14 @@ public class Dealership : BaseEntity
 
     public void UpdateFinancePolicy(string? policy) => FinancePolicy = policy;
     public void UpdateWarrantyPolicy(string? policy) => WarrantyPolicy = policy;
-    public void UpdateHeroSettings(HeroType heroType, string? backgroundImage = null, string? videoUrl = null, List<string>? carouselImages = null)
+    public void UpdateHeroSettings(HeroType heroType, string? backgroundImage = null, string? videoUrl = null, List<string>? carouselImages = null, string? heroTitle = null, string? heroSubtitle = null)
     {
         HeroType = heroType;
         HeroBackgroundImage = backgroundImage;
         HeroVideoUrl = videoUrl;
         if (carouselImages != null) HeroCarouselImages = carouselImages;
+        if (heroTitle != null) HeroTitle = heroTitle;
+        if (heroSubtitle != null) HeroSubtitle = heroSubtitle;
     }
     public void UpdateNavigationConfig(string? config) => NavigationConfigJson = config;
     public void UpdateSocialMedia(string? facebookUrl, string? instagramUrl)

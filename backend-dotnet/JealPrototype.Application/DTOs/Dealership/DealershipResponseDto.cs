@@ -17,6 +17,8 @@ public class DealershipResponseDto
     public string HeroType { get; set; } = "image";
     public string? HeroVideoUrl { get; set; }
     public List<string> HeroCarouselImages { get; set; } = new();
+    public string? HeroTitle { get; set; }
+    public string? HeroSubtitle { get; set; }
     public string ThemeColor { get; set; } = "#3B82F6";
     public string SecondaryThemeColor { get; set; } = "#FFFFFF";
     public string BodyBackgroundColor { get; set; } = "#FFFFFF";

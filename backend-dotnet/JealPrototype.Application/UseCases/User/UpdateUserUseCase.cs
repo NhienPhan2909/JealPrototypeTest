@@ -24,14 +24,33 @@ public class UpdateUserUseCase
     public async Task<ApiResponse<UserResponseDto>> ExecuteAsync(
         int userId,
         UpdateUserDto request,
-        int requestorDealershipId,
+        int requestorId,
         CancellationToken cancellationToken = default)
     {
-        var user = await _userRepository.GetByIdAsync(userId, cancellationToken);
+        // Fetch the requestor to validate authorization
+        var requestor = await _userRepository.GetByIdAsync(requestorId, cancellationToken);
+        if (requestor == null)
+        {
+            return ApiResponse<UserResponseDto>.ErrorResponse("Requestor not found");
+        }
 
-        if (user == null || user.DealershipId != requestorDealershipId)
+        // Fetch the user being updated
+        var user = await _userRepository.GetByIdAsync(userId, cancellationToken);
+        if (user == null)
         {
             return ApiResponse<UserResponseDto>.ErrorResponse("User not found");
+        }
+
+        // Authorization: Admin can update any user
+        if (requestor.UserType != UserType.Admin)
+        {
+            // Non-admin users can only update users from their own dealership
+            if (!requestor.DealershipId.HasValue || !user.DealershipId.HasValue ||
+                requestor.DealershipId.Value != user.DealershipId.Value)
+            {
+                return ApiResponse<UserResponseDto>.ErrorResponse(
+                    "Access denied: You can only update users from your own dealership");
+            }
         }
 
         var email = !string.IsNullOrWhiteSpace(request.Email)

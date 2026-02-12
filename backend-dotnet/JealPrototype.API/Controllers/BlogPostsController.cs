@@ -1,3 +1,5 @@
+using JealPrototype.API.Extensions;
+using JealPrototype.API.Filters;
 using JealPrototype.Application.DTOs.BlogPost;
 using JealPrototype.Application.DTOs.Common;
 using JealPrototype.Application.UseCases.BlogPost;
@@ -36,6 +38,7 @@ public class BlogPostsController : ControllerBase
 
     [HttpPost]
     [Authorize]
+    [RequireDealershipAccess("DealershipId", DealershipAccessSource.Body, RequireAuthentication = true)]
     public async Task<ActionResult<ApiResponse<BlogPostResponseDto>>> CreateBlogPost([FromBody] CreateBlogPostDto request)
     {
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -57,6 +60,10 @@ public class BlogPostsController : ControllerBase
         [FromQuery] bool publishedOnly = false)
     {
         var result = await _getBlogPostsUseCase.ExecuteAsync(dealershipId, publishedOnly);
+        
+        if (!result.Success)
+            return BadRequest(result);
+        
         return Ok(result);
     }
 
@@ -86,6 +93,7 @@ public class BlogPostsController : ControllerBase
 
     [HttpPut("{id}")]
     [Authorize]
+    [RequireDealershipAccess("dealershipId", DealershipAccessSource.Query, RequireAuthentication = true)]
     public async Task<ActionResult<ApiResponse<BlogPostResponseDto>>> UpdateBlogPost(int id, [FromQuery] int dealershipId, [FromBody] UpdateBlogPostDto request)
     {
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -102,6 +110,7 @@ public class BlogPostsController : ControllerBase
 
     [HttpDelete("{id}")]
     [Authorize]
+    [RequireDealershipAccess("dealershipId", DealershipAccessSource.Query, RequireAuthentication = true)]
     public async Task<ActionResult<ApiResponse<object>>> DeleteBlogPost(int id, [FromQuery] int dealershipId)
     {
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;

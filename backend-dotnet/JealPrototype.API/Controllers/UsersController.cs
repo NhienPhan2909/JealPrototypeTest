@@ -1,3 +1,5 @@
+using JealPrototype.API.Extensions;
+using JealPrototype.API.Filters;
 using JealPrototype.Application.DTOs.Common;
 using JealPrototype.Application.DTOs.User;
 using JealPrototype.Application.UseCases.User;
@@ -38,10 +40,7 @@ public class UsersController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<ApiResponse<UserResponseDto>>> CreateUser([FromBody] CreateUserDto request)
     {
-        var creatorIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        if (string.IsNullOrEmpty(creatorIdClaim) || !int.TryParse(creatorIdClaim, out int creatorId))
-            return Unauthorized(ApiResponse<UserResponseDto>.ErrorResponse("Invalid user token"));
-
+        var creatorId = User.GetUserId();
         var result = await _createUserUseCase.ExecuteAsync(request, creatorId);
         
         if (!result.Success)
@@ -51,6 +50,7 @@ public class UsersController : ControllerBase
     }
 
     [HttpGet("dealership/{dealershipId}/all")]
+    [RequireDealershipAccess("dealershipId", DealershipAccessSource.Route, RequireAuthentication = true)]
     public async Task<ActionResult<ApiResponse<List<UserResponseDto>>>> GetUsers(int dealershipId)
     {
         var requestorIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -58,6 +58,10 @@ public class UsersController : ControllerBase
             return Unauthorized(ApiResponse<List<UserResponseDto>>.ErrorResponse("Invalid user token"));
 
         var result = await _getUsersUseCase.ExecuteAsync(requestorId, dealershipId);
+        
+        if (!result.Success)
+            return BadRequest(result);
+        
         return Ok(result);
     }
 
@@ -73,19 +77,22 @@ public class UsersController : ControllerBase
     }
 
     [HttpGet("dealership/{dealershipId}")]
+    [RequireDealershipAccess("dealershipId", DealershipAccessSource.Route, RequireAuthentication = true)]
     public async Task<ActionResult<ApiResponse<List<UserResponseDto>>>> GetDealershipUsers(int dealershipId)
     {
-        var result = await _getDealershipUsersUseCase.ExecuteAsync(dealershipId);
+        var requestorId = User.GetUserId();
+        var result = await _getDealershipUsersUseCase.ExecuteAsync(dealershipId, requestorId);
+        
+        if (!result.Success)
+            return BadRequest(result);
+        
         return Ok(result);
     }
 
     [HttpPut("{id}")]
     public async Task<ActionResult<ApiResponse<UserResponseDto>>> UpdateUser(int id, [FromBody] UpdateUserDto request)
     {
-        var updaterIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        if (string.IsNullOrEmpty(updaterIdClaim) || !int.TryParse(updaterIdClaim, out int updaterId))
-            return Unauthorized(ApiResponse<UserResponseDto>.ErrorResponse("Invalid user token"));
-
+        var updaterId = User.GetUserId();
         var result = await _updateUserUseCase.ExecuteAsync(id, request, updaterId);
         
         if (!result.Success)

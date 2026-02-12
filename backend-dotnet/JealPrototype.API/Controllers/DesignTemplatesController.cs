@@ -1,3 +1,5 @@
+using JealPrototype.API.Extensions;
+using JealPrototype.API.Filters;
 using JealPrototype.Application.DTOs.DesignTemplate;
 using JealPrototype.Application.UseCases.DesignTemplates;
 using Microsoft.AspNetCore.Authorization;
@@ -32,6 +34,7 @@ public class DesignTemplatesController : ControllerBase
 
     [HttpPost]
     [Authorize]
+    [RequireDealershipAccess("DealershipId", DealershipAccessSource.Body, RequireAuthentication = true, AllowAdmin = true)]
     public async Task<ActionResult<DesignTemplateResponseDto>> CreateTemplate([FromBody] CreateDesignTemplateDto request)
     {
         var template = await _createDesignTemplateUseCase.ExecuteAsync(request);
