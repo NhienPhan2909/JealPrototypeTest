@@ -25,17 +25,18 @@ public class JwtAuthService : IAuthService
         var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
         var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
+        // Use simple claim names instead of ClaimTypes constants to avoid URI-based claim names
         var claims = new List<Claim>
         {
-            new(ClaimTypes.NameIdentifier, user.Id.ToString()),
-            new(ClaimTypes.Name, user.Username),
-            new(ClaimTypes.Email, user.Email.Value),
-            new("user_type", user.UserType.ToString()),
-            new("full_name", user.FullName)
+            new("sub", user.Id.ToString()),  // subject (standard JWT claim)
+            new("username", user.Username),
+            new("email", user.Email.Value),
+            new("usertype", user.UserType.ToString()),
+            new("fullname", user.FullName)
         };
 
         if (user.DealershipId.HasValue)
-            claims.Add(new Claim("dealership_id", user.DealershipId.Value.ToString()));
+            claims.Add(new Claim("dealershipid", user.DealershipId.Value.ToString()));
 
         foreach (var permission in user.Permissions)
             claims.Add(new Claim("permission", permission.ToString()));

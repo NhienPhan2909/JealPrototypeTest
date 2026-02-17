@@ -11,6 +11,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JealPrototype.Infrastructur
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JealPrototype.API", "JealPrototype.API\JealPrototype.API.csproj", "{241B3F34-3C9F-4DDC-A35E-B9926C6D6126}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JealPrototype.Tests.Unit", "JealPrototype.Tests.Unit\JealPrototype.Tests.Unit.csproj", "{D686D040-EAFB-4062-B0EF-F40151A7794D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JealPrototype.Tests.Integration", "JealPrototype.Tests.Integration\JealPrototype.Tests.Integration.csproj", "{ACE75072-2163-43C9-8C66-6403B8D03A04}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -36,5 +40,13 @@ Global
 		{241B3F34-3C9F-4DDC-A35E-B9926C6D6126}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{241B3F34-3C9F-4DDC-A35E-B9926C6D6126}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{241B3F34-3C9F-4DDC-A35E-B9926C6D6126}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D686D040-EAFB-4062-B0EF-F40151A7794D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D686D040-EAFB-4062-B0EF-F40151A7794D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D686D040-EAFB-4062-B0EF-F40151A7794D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D686D040-EAFB-4062-B0EF-F40151A7794D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ACE75072-2163-43C9-8C66-6403B8D03A04}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ACE75072-2163-43C9-8C66-6403B8D03A04}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ACE75072-2163-43C9-8C66-6403B8D03A04}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ACE75072-2163-43C9-8C66-6403B8D03A04}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
