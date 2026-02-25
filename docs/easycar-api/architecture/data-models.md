@@ -6,13 +6,15 @@ The EasyCars integration introduces new domain entities while extending existing
 
 #### EasyCarsCredential Entity
 
-**Purpose:** Securely stores dealership-specific EasyCars API credentials with encryption for Account Number (PublicID) and Account Secret (SecretKey).
+**Purpose:** Securely stores dealership-specific EasyCars API credentials with encryption for all four credential fields. Two separate credential sets are required by the EasyCars API.
 
 **Key Attributes:**
 - `Id` (int, PK): Unique identifier for credential record
 - `DealershipId` (int, FK): Reference to owning Dealership
-- `AccountNumberEncrypted` (string): AES-256-GCM encrypted Account Number/PublicID
-- `AccountSecretEncrypted` (string): AES-256-GCM encrypted Account Secret/SecretKey
+- `ClientIdEncrypted` (string): AES-256-GCM encrypted Client ID (UUID from EasyCars API portal — used to obtain JWT token)
+- `ClientSecretEncrypted` (string): AES-256-GCM encrypted Client Secret (UUID from EasyCars API portal)
+- `AccountNumberEncrypted` (string): AES-256-GCM encrypted Account Number (EC-prefixed, e.g. EC114575 — sent in stock request body)
+- `AccountSecretEncrypted` (string): AES-256-GCM encrypted Account Secret (UUID — sent in stock request body)
 - `Environment` (enum: Test, Production): Target API environment
 - `IsActive` (bool): Whether credentials are currently active
 - `YardCode` (string, nullable): Optional filter for specific yard inventory
@@ -20,12 +22,13 @@ The EasyCars integration introduces new domain entities while extending existing
 - `UpdatedAt` (DateTime): Last modification timestamp
 - `LastSyncedAt` (DateTime, nullable): Last successful sync operation
 
+> **Important:** `ClientId`/`ClientSecret` are the API-level auth credentials (obtained from the EasyCars API portal, UUID format). `AccountNumber`/`AccountSecret` are the dealer account credentials (`AccountNumber` is EC-prefixed, `AccountSecret` is a UUID).
+
 **TypeScript Interface (Shared Model):**
 ```typescript
 export interface EasyCarsCredential {
   id: number;
   dealershipId: number;
-  accountNumber?: string; // Only exposed in write operations, never returned in GET
   environment: 'Test' | 'Production';
   isActive: boolean;
   yardCode?: string;
@@ -35,8 +38,10 @@ export interface EasyCarsCredential {
 }
 
 export interface EasyCarsCredentialRequest {
-  accountNumber: string;
-  accountSecret: string;
+  clientId: string;       // UUID from EasyCars API portal
+  clientSecret: string;   // UUID from EasyCars API portal
+  accountNumber: string;  // EC-prefix format, e.g. EC114575
+  accountSecret: string;  // UUID
   environment: 'Test' | 'Production';
   yardCode?: string;
 }

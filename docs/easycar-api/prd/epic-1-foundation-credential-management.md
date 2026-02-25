@@ -80,7 +80,7 @@ so that I can configure the integration between my dealership and EasyCars.
 #### Acceptance Criteria
 
 1. New "EasyCars Settings" section added to Dealership Settings page in CMS admin
-2. Form displays with fields: Account Number/PublicID (text input), Account Secret/SecretKey (password input), Environment (dropdown: Test/Production)
+2. Form displays with fields: Client ID (text input), Client Secret (password input), Account Number (text input), Account Secret (password input), Environment (dropdown: Test/Production). Client ID and Client Secret are UUID credentials from the EasyCars API portal (for token auth). Account Number uses EC-prefix format (e.g. EC114575) and Account Secret is a UUID (for stock data requests).
 3. "Test Connection" button triggers test connection API call and displays success/failure message
 4. "Save Credentials" button disabled until successful test connection (optional: can be overridden with checkbox)
 5. Form displays current credentials status (configured/not configured) without showing the secret

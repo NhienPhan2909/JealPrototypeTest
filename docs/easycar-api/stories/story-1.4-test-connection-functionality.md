@@ -63,9 +63,9 @@ This endpoint serves as the foundation for Story 1.5 (Admin UI) where the "Test 
 
 ## Acceptance Criteria
 
-1. **POST `/api/admin/easycars/test-connection` endpoint created** accepting `account_number`, `account_secret`, and `environment` (test/production)
+1. **POST `/api/admin/easycars/credentials/test-connection` endpoint created** accepting `clientId`, `clientSecret`, `accountNumber`, `accountSecret`, and `environment` (test/production)
 
-2. **Endpoint calls EasyCars RequestToken API** with provided credentials to validate authentication
+2. **Endpoint calls EasyCars `/StockService/RequestToken` API** with `clientId` and `clientSecret` as query parameters (empty body) to validate authentication
 
 3. **Returns success response** if token is obtained successfully, including:
    - Success status (true)
@@ -115,8 +115,10 @@ This endpoint serves as the foundation for Story 1.5 (Admin UI) where the "Test 
 
 - [ ] Create `TestConnectionRequest` DTO in `Application/DTOs/EasyCars/`
   - Properties:
-    - `AccountNumber` (string, required) - EasyCars PublicID (GUID format)
-    - `AccountSecret` (string, required) - EasyCars SecretKey (GUID format)
+    - `ClientId` (string, required) — EasyCars API portal client ID (used for token acquisition)
+    - `ClientSecret` (string, required) — EasyCars API portal client secret
+    - `AccountNumber` (string, required) — EasyCars dealer account number (EC-prefix format, e.g. EC114575)
+    - `AccountSecret` (string, required) — EasyCars dealer account secret (UUID)
     - `Environment` (string, required) - "Test" or "Production"
   - Add data annotations for validation
 - [ ] Create `TestConnectionResponse` DTO in `Application/DTOs/EasyCars/`
@@ -129,22 +131,24 @@ This endpoint serves as the foundation for Story 1.5 (Admin UI) where the "Test 
     - `TokenExpiresAt` (DateTime?, optional) - When token expires (if successful)
   - Include factory methods for success/failure scenarios
 - [ ] Create `TestConnectionRequestValidator` using FluentValidation
-  - Validate AccountNumber is valid GUID format
-  - Validate AccountSecret is valid GUID format
+  - Validate `ClientId` is not empty
+  - Validate `ClientSecret` is not empty
+  - Validate `AccountNumber` is not empty
+  - Validate `AccountSecret` is not empty
   - Validate Environment is "Test" or "Production"
   - Provide clear error messages for each validation rule
 
 ### Task 2: Create EasyCars API Client Infrastructure
 
 - [ ] Create `IEasyCarsApiClient` interface in `Application/Interfaces/`
-  - Method: `Task<EasyCarsTokenResponse> RequestTokenAsync(string accountNumber, string accountSecret, string environment, CancellationToken cancellationToken = default)`
-  - Method: `Task<bool> ValidateCredentialsAsync(string accountNumber, string accountSecret, string environment, CancellationToken cancellationToken = default)`
+  - Method: `Task<string> RequestTokenAsync(string clientId, string clientSecret, string environment, int dealershipId, CancellationToken cancellationToken = default)`
+  - Method: `Task<bool> TestConnectionAsync(string clientId, string clientSecret, string accountNumber, string accountSecret, string environment, CancellationToken cancellationToken = default)`
 - [ ] Create `EasyCarsTokenResponse` DTO for API response
-  - Properties based on EasyCars API specification:
-    - `ResponseCode` (int) - 0 for success, 1 for authentication fail
-    - `Token` (string?) - JWT token if successful
-    - `ExpiresAt` (DateTime?) - Token expiration
-    - `ErrorMessage` (string?) - Error details if failed
+  - Properties based on EasyCars API documentation v1.01:
+    - `Code` (int) — 0 for success, non-zero for errors
+    - `Token` (string?) — JWT token if successful
+    - `ExpiresAt` (DateTime?) — Token expiration
+    - `ResponseMessage` (string?) — Error details if failed
 - [ ] Create `EasyCarsApiClient` implementation in `Infrastructure/ExternalServices/`
   - Inject `IHttpClientFactory` for HTTP requests
   - Inject `ILogger<EasyCarsApiClient>` for logging

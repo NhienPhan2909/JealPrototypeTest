@@ -17,10 +17,10 @@ This guide helps developers quickly understand and implement the EasyCars API in
 ## 📋 Prerequisites
 
 - [ ] Review PRD and Architecture documents
-- [ ] Access to EasyCars API documentation PDFs
-- [ ] Test credentials:
-  - **PublicID:** `AA20EE61-5CFA-458D-9AFB-C4E929EA18E6`
-  - **SecretKey:** `7326AF23-714A-41A5-A74F-EC77B4E4F2F2`
+- [ ] Access to EasyCars API documentation PDFs (see `docs/easycar-api/`)
+- [ ] EasyCars credentials — two separate sets required:
+  - **ClientID** and **ClientSecret**: UUID credentials from the EasyCars API portal (used for JWT token acquisition)
+  - **AccountNumber** and **AccountSecret**: Dealer account credentials (e.g. AccountNumber `EC114575`, AccountSecret is a UUID)
 - [ ] .NET 8 SDK installed
 - [ ] PostgreSQL database setup
 - [ ] Node.js and npm for frontend development
@@ -36,8 +36,10 @@ This guide helps developers quickly understand and implement the EasyCars API in
 **Tasks:**
 1. **Update Dealership Entity** (`JealPrototype.Domain/Entities/Dealership.cs`)
    ```csharp
-   public string? EasyCarsPublicId { get; private set; }
-   public string? EasyCarsSecretKey { get; private set; }  // Encrypted
+   public string? EasyCarsClientId { get; private set; }    // Encrypted
+   public string? EasyCarsClientSecret { get; private set; } // Encrypted
+   public string? EasyCarsAccountNumber { get; private set; } // Encrypted
+   public string? EasyCarsAccountSecret { get; private set; } // Encrypted
    public DateTime? LastEasyCarsSyncAt { get; private set; }
    ```
 

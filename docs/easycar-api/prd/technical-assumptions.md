@@ -16,7 +16,7 @@ The integration will follow the existing Monolith architecture pattern with:
 
 - Unit tests for EasyCars API client classes, credential encryption/decryption, and data mapping logic
 - Integration tests using mock EasyCars API responses to test sync workflows end-to-end
-- Manual testing convenience method to trigger sync operations with provided test credentials (PublicID: AA20EE61-5CFA-458D-9AFB-C4E929EA18E6, SecretKey: 7326AF23-714A-41A5-A74F-EC77B4E4F2F2)
+- Manual testing convenience method to trigger sync operations with real credentials. **Two separate credential sets are required:** ClientID/ClientSecret (UUID from EasyCars API portal, used for token acquisition) and AccountNumber/AccountSecret (dealer account credentials, AccountNumber uses EC-prefix format e.g. EC114575)
 - E2E tests covering admin interface credential management and manual sync trigger workflows
 
 ### Additional Technical Assumptions and Requests

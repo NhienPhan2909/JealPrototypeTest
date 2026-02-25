@@ -52,7 +52,7 @@ The API must be production-ready with comprehensive error handling, proper HTTP 
 
 5. **All endpoints validate user has admin permissions** for the dealership
 
-6. **Request validation implemented** ensuring account_number and account_secret meet format requirements
+6. **Request validation implemented** ensuring `clientId`, `clientSecret`, `accountNumber`, and `accountSecret` are present; `accountNumber` uses EC-prefix format (e.g. EC114575), not GUID format
 
 7. **Responses return appropriate HTTP status codes** (200, 201, 400, 401, 403, 404, 500)
 

@@ -3,7 +3,7 @@
 **Project:** Jeal Prototype - EasyCars Integration  
 **Version:** 1.0  
 **Last Updated:** 2026-02-24  
-**Status:** Planning & Documentation Complete - Ready for Implementation
+**Status:** Implementation In Progress
 
 ---
 
@@ -242,8 +242,10 @@ The EasyCars Integration feature connects dealership management systems with Eas
 ### Key Capabilities
 
 1. **Credential Management**
-   - Store EasyCars PublicID and SecretKey per dealership
-   - Encrypted storage (AES-256)
+   - Store **four** EasyCars credential fields per dealership:
+     - `ClientId` and `ClientSecret` — API authentication (used to obtain JWT token)
+     - `AccountNumber` and `AccountSecret` — Stock data access (sent in stock request body)
+   - Encrypted storage (AES-256-GCM)
    - Admin UI for configuration
 
 2. **Vehicle Sync**
@@ -281,17 +283,19 @@ The EasyCars Integration feature connects dealership management systems with Eas
 - [x] 25 implementation tasks identified
 - [x] Task dependencies mapped
 
-### Development Phase: ⏳ NOT STARTED
-Progress tracked in implementation todos (see Quick Start Guide Phase breakdown)
-
-**Estimated Timeline:** 4 weeks (20 business days)
-
-**Phases:**
-- Phase 1-2: Backend foundation (Days 1-5)
-- Phase 3-4: Sync logic & automation (Days 6-10)
-- Phase 5-6: APIs & frontend (Days 11-16)
-- Phase 7: Testing & docs (Days 17-18)
-- Final: Review & deploy (Days 19-20)
+### Implementation Phase: ✅ IN PROGRESS
+- [x] PRD created with 19 user stories
+- [x] Architecture designed with component diagrams
+- [x] Quick start guide with code examples
+- [x] 25 implementation tasks identified
+- [x] Task dependencies mapped
+- [x] Admin authentication (login, JWT claims, admin role)
+- [x] Credential CRUD endpoints (POST/GET/PUT/DELETE)
+- [x] AES-256-GCM encryption service
+- [x] EasyCars API client (token + stock retrieval)
+- [x] Stock sync service and background job
+- [x] Stock sync admin UI (status, history, manual trigger)
+- [x] EasyCars credential form UI (4-field: ClientId, ClientSecret, AccountNumber, AccountSecret)
 
 ---
 

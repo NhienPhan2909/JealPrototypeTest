@@ -11,11 +11,15 @@ Test EasyCars credentials without saving them.
 Request:
 ```json
 {
-  "accountNumber": "AA20EE61-5CFA-458D-9AFB-C4E929EA18E6",
-  "accountSecret": "7326AF23-714A-41A5-A74F-EC77B4E4F2F2",
+  "clientId": "uuid-from-easycars-portal",
+  "clientSecret": "uuid-from-easycars-portal",
+  "accountNumber": "EC114575",
+  "accountSecret": "11b6d61f-6e67-4c16-8511-8647ecb881d6",
   "environment": "Test"
 }
 ```
+
+> **Note:** `clientId` and `clientSecret` are the API-level credentials (UUIDs from the EasyCars API portal, used to obtain a JWT token). `accountNumber` and `accountSecret` are the dealer account credentials (EC-prefixed number and UUID) sent in stock request bodies.
 
 Response (200 OK):
 ```json
@@ -44,8 +48,10 @@ Create or update EasyCars credentials for authenticated dealership.
 Request:
 ```json
 {
-  "accountNumber": "AA20EE61-5CFA-458D-9AFB-C4E929EA18E6",
-  "accountSecret": "7326AF23-714A-41A5-A74F-EC77B4E4F2F2",
+  "clientId": "uuid-from-easycars-portal",
+  "clientSecret": "uuid-from-easycars-portal",
+  "accountNumber": "EC114575",
+  "accountSecret": "11b6d61f-6e67-4c16-8511-8647ecb881d6",
   "environment": "Production",
   "yardCode": "MAIN" // Optional
 }
@@ -242,11 +248,18 @@ Response (200 OK):
 All endpoints require:
 - **Authentication:** Valid JWT bearer token in `Authorization` header
 - **Authorization:** User must have admin permissions for their dealership
-- **Tenant Isolation:** All operations automatically scoped to authenticated user's dealership
+- **Tenant Isolation:** All operations scoped to the authenticated user's dealership
+
+**Admin Users:** Platform-level admins do not have a `dealershipid` JWT claim. They must pass `?dealershipId=` as a query parameter on all requests. The backend resolves the effective dealership using `ResolveEffectiveDealershipId(int? requestedDealershipId)` in each controller — admins use the query param, regular users use their JWT claim.
+
+**JWT Claim Notes:**
+- All JWT claims are lowercase: `"sub"`, `"username"`, `"email"`, `"usertype"`, `"fullname"`, `"dealershipid"`
+- The `usertype` value is `"Admin"` (PascalCase) — comparison must be case-insensitive
+- Non-admin users always have a `dealershipid` claim
 
 Middleware flow:
 1. JWT validation (signature, expiration)
-2. Extract `dealershipid` claim from token
+2. Extract `dealershipid` claim from token (or `dealershipId` query param for admins)
 3. Verify user has admin permission
 4. Inject dealership context into request pipeline
 5. Repository queries automatically filter by dealership

@@ -157,8 +157,8 @@ public class EasyCarsApiClient : IEasyCarsApiClient
 ```json
 {
   "EasyCars": {
-    "TestApiUrl": "https://api-test.easycarsapi.com",
-    "ProductionApiUrl": "https://api.easycarsapi.com",
+    "TestApiUrl": "https://testmy.easycars.com.au/TestECService",
+    "ProductionApiUrl": "https://my.easycars.net.au/ECService",
     "TimeoutSeconds": 30,
     "RetryAttempts": 3,
     "RetryDelayMilliseconds": 1000
@@ -194,7 +194,7 @@ public class EasyCarsApiClient : IEasyCarsApiClient
 
 **Caching Strategy:**
 - In-memory cache with sliding expiration (9 minutes 30 seconds)
-- Cache keyed by `{PublicID}:{Environment}:{DealershipId}`
+- Cache keyed by `{ClientId}:{Environment}:{DealershipId}`
 - Thread-safe access (use `SemaphoreSlim` or `ConcurrentDictionary`)
 
 **Automatic Refresh:**
@@ -203,7 +203,7 @@ public class EasyCarsApiClient : IEasyCarsApiClient
 - If refresh fails, clear cache and throw exception
 
 **Expected Behavior:**
-- First authenticated request acquires token via `/RequestToken`
+- First authenticated request acquires token via `POST /StockService/RequestToken?ClientID=X&ClientSecret=Y` (empty body)
 - Token cached with 9:30 expiry
 - Subsequent requests within 9:30 reuse cached token
 - After 9:30, token automatically refreshed before request
@@ -317,14 +317,16 @@ Authorization: Bearer {jwt_token}
 **EasyCars Response Format:**
 ```json
 {
-  "ResponseCode": 0,
+  "Code": 0,
   "ResponseMessage": "Success",
   "Token": "jwt_token_here",
   "Data": { ... }
 }
 ```
 
-**Response Codes (From EasyCars API Spec):**
+> **Note:** EasyCars error responses use `"Code"` (not `"ResponseCode"`) for the status field. `EasyCarsBaseResponse.IsSuccess` checks `Code == 0`. Success responses may omit `Code` (defaults to 0).
+
+**Response Codes (From EasyCars API Documentation v1.01):**
 - **0**: Success
 - **1**: Authentication failure (invalid credentials)
 - **5**: Temporary error (retry later)

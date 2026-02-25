@@ -10,13 +10,22 @@
 ```csharp
 public interface IEasyCarsApiClient
 {
-    Task<string> RequestTokenAsync(string accountNumber, string accountSecret, CancellationToken ct);
-    Task<StockResponse> GetAdvertisementStocksAsync(string token, string accountNumber, string? yardCode, CancellationToken ct);
-    Task<LeadCreateResponse> CreateLeadAsync(string token, CreateLeadRequest request, CancellationToken ct);
-    Task<LeadUpdateResponse> UpdateLeadAsync(string token, UpdateLeadRequest request, CancellationToken ct);
-    Task<LeadDetailResponse> GetLeadDetailAsync(string token, string accountNumber, string leadNumber, CancellationToken ct);
+    Task<string> RequestTokenAsync(string clientId, string clientSecret, string environment, int dealershipId, CancellationToken ct);
+    Task<StockResponse> GetAdvertisementStocksAsync(string accountNumber, string accountSecret, string environment, int dealershipId, string? yardCode, CancellationToken ct);
+    Task<bool> TestConnectionAsync(string clientId, string clientSecret, string accountNumber, string accountSecret, string environment, CancellationToken ct);
 }
 ```
+
+**EasyCars API Endpoints (per official documentation v1.01):**
+
+| Endpoint | Method | Purpose | Auth |
+|----------|--------|---------|------|
+| `/StockService/RequestToken?ClientID=X&ClientSecret=Y` | POST | Obtain JWT token | Query params (no body) |
+| `/StockService/GetAdvertisementStocks` | POST | Retrieve vehicle stock | Bearer JWT + JSON body `{AccountNumber, AccountSecret, YardCode}` |
+
+**Base URLs:**
+- Test: `https://testmy.easycars.com.au/TestECService`
+- Production: `https://my.easycars.net.au/ECService`
 
 **Dependencies:**
 - `IHttpClientFactory` - Create configured HttpClient instances
@@ -24,11 +33,12 @@ public interface IEasyCarsApiClient
 - `IConfiguration` - API base URLs and timeouts
 
 **Implementation Details:**
-- Uses Polly for retry policies (3 attempts, exponential backoff)
-- Caches JWT tokens until 1 minute before expiry
-- Maps EasyCars response codes (0, 1, 5, 7, 9) to typed exceptions
+- Token request uses query parameters (`?ClientID=X&ClientSecret=Y`), empty POST body
+- Stock request sends `{AccountNumber, AccountSecret, YardCode}` as JSON body with Bearer token header
+- Caches JWT tokens until 1 minute before expiry; keyed by `{ClientId}:{Environment}:{DealershipId}`
+- EasyCars responses use `"Code"` field (not `"ResponseCode"`) — success when `Code == 0`
 - Logs all requests at Debug level, errors at Error level
-- Configurable base URLs: `EasyCarsApi:TestBaseUrl` and `EasyCarsApi:ProductionBaseUrl`
+- Configurable base URLs: `EasyCars:TestApiUrl` and `EasyCars:ProductionApiUrl`
 
 ---
 

@@ -41,8 +41,10 @@ This document provides comprehensive documentation for the database schema suppo
 |------------|-----------|-------------|-------------|
 | `id` | SERIAL | PRIMARY KEY | Auto-incrementing unique identifier |
 | `dealership_id` | INTEGER | NOT NULL, UNIQUE, FK → dealerships.id | Reference to dealership (one credential per dealership) |
-| `account_number_encrypted` | TEXT | NOT NULL | Encrypted EasyCars account number |
-| `account_secret_encrypted` | TEXT | NOT NULL | Encrypted EasyCars account secret/password |
+| `client_id_encrypted` | TEXT | NOT NULL | Encrypted EasyCars Client ID (UUID from API portal) |
+| `client_secret_encrypted` | TEXT | NOT NULL | Encrypted EasyCars Client Secret (UUID from API portal) |
+| `account_number_encrypted` | TEXT | NOT NULL | Encrypted EasyCars account number (EC-prefix, e.g. EC114575) |
+| `account_secret_encrypted` | TEXT | NOT NULL | Encrypted EasyCars account secret (dealer account UUID) |
 | `encryption_iv` | TEXT | NOT NULL | Initialization vector for AES-256-GCM encryption |
 | `environment` | VARCHAR(20) | NOT NULL, CHECK IN ('Test', 'Production') | EasyCars environment to connect to |
 | `is_active` | BOOLEAN | NOT NULL, DEFAULT true | Whether credentials are currently active |
@@ -66,9 +68,11 @@ This document provides comprehensive documentation for the database schema suppo
 #### Notes
 
 - Credentials are never stored in plain text
+- **Two separate credential sets are stored:** `ClientId`/`ClientSecret` (for API token acquisition) and `AccountNumber`/`AccountSecret` (for stock data access)
 - The `encryption_iv` must be stored alongside encrypted data for decryption
 - Deleting a dealership automatically deletes its credentials (CASCADE)
 - The partial index on `is_active` optimizes queries for active credentials
+- Added via EF migration `AddClientIdClientSecretToEasyCarsCredentials` (2026-02-25)
 
 ---
 
