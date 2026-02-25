@@ -1,0 +1,87 @@
+story: "2.6 - Implement Image Synchronization for Stock Items"
+reviewed_by: "Quinn (BMad QA Agent)"
+review_date: "2026-02-25"
+gate_decision: PASS
+quality_score: 96/100
+expires: "2026-04-25"
+
+ac_coverage:
+  - ac: AC1
+    status: PASS
+    notes: "IImageDownloadService created; DownloadAndStoreImagesAsync reads from stockItem.ImageURLs"
+  - ac: AC2
+    status: PASS
+    notes: "Task.WhenAll in DownloadAndStoreImagesAsync downloads in parallel; called during MapToVehicleAsync"
+  - ac: AC3
+    status: PASS
+    notes: "IImageUploadService.UploadImageAsync used; Cloudinary integration via existing CloudinaryImageUploadService"
+  - ac: AC4
+    status: PASS
+    notes: "vehicle.Update(..., cloudinaryUrls) called then vehicleRepository.UpdateAsync persists link to DB"
+  - ac: AC5
+    status: PASS
+    notes: "HTTP non-success: LogWarning + return; exceptions: LogWarning + return. Both paths tested."
+  - ac: AC6
+    status: PASS
+    notes: "MD5 hash computed per image; lock(seenHashes) ensures thread-safe dedup within a single sync call"
+  - ac: AC7
+    status: PASS
+    notes: "static readonly SemaphoreSlim(5, 5) caps concurrent downloads at 5 globally across all instances"
+  - ac: AC8
+    status: PASS
+    notes: >
+      Fixed by QA: SyncResult.ImagesDownloaded/ImagesFailed were present in DTO but always 0 because
+      EasyCarsStockSyncService did not aggregate counts. Fixed by introducing StockMapResult record to
+      carry image counts from EasyCarsStockMapper through to SyncResult factory methods.
+  - ac: AC9
+    status: PASS
+    notes: >
+      8 tests pass: success, 404-and-continue, duplicate-bytes-uploads-once, sync-disabled-returns-empty,
+      empty-urls-returns-empty, download-exception-continues, null-urls, Cloudinary-upload-failure-continues
+  - ac: AC10
+    status: PASS
+    notes: >
+      easycar_image_sync_enabled checked at start of DownloadAndStoreImagesAsync; seed entry in
+      SystemSettingsConfiguration; returns empty list and skips HTTP calls when disabled
+
+issues:
+  - severity: MEDIUM
+    description: >
+      SyncResult.ImagesDownloaded and ImagesFailed fields were declared but never populated.
+      EasyCarsStockSyncService.ProcessStockItemsAsync discarded the Vehicle return from MapToVehicleAsync
+      without capturing image counts, so the API always returned imagesDownloaded=0/imagesFailed=0.
+    status: resolved
+    fix_applied: >
+      Introduced StockMapResult record (DTOs/EasyCars/StockMapResult.cs) carrying Vehicle + image counts.
+      Updated IEasyCarsStockMapper interface and EasyCarsStockMapper implementation to return StockMapResult.
+      EasyCarsStockSyncService now aggregates totalImagesDownloaded/totalImagesFailed and passes them to
+      SyncResult.Success and SyncResult.PartialSuccess factory methods (added optional int params).
+      Updated EasyCarsStockMapperTests (23 tests) and EasyCarsStockSyncServiceTests (helper methods) accordingly.
+      Build: 0 errors. Tests: 172 passed, 4 pre-existing failures (unrelated).
+
+residual_notes:
+  - >
+    (LOW) Hardcoded .jpg extension in upload filename: vehicle_{id}_{index}_{hash[..8]}.jpg. EasyCars images
+    could be PNG or WebP. Cloudinary auto-detects format from bytes so this is cosmetic only — filenames
+    are not user-visible. Acceptable for v1.
+  - >
+    (LOW) static readonly SemaphoreSlim is shared across all scoped ImageDownloadService instances (by design).
+    In a multi-dealership concurrent sync scenario this is the correct behaviour — it acts as a global
+    rate limit on outbound image downloads. Worth a code comment to avoid future confusion.
+  - >
+    (LOW) Test DownloadAndStoreImagesAsync_With404Url_LogsWarningAndContinuesWithOthers uses a Queue-based
+    sequential mock with Task.WhenAll parallel execution. Concurrent Queue.Dequeue() calls are not thread-safe;
+    in practice two tasks racing for dequeue slots could yield non-deterministic response ordering. The test
+    asserts Assert.Single(result) only (not URL order), so it passes consistently, but is latent-fragile.
+    Suggest replacing with URL-keyed mock (WhenCalled by URL pattern) in a future hardening pass.
+  - >
+    (LOW) No explicit null/empty-string guard on individual URL entries in the imageUrls list.
+    An empty string URL would throw UriFormatException caught by the existing catch block, logging a warning
+    and continuing — graceful behaviour satisfies AC5, but the warning message says "Exception downloading"
+    rather than "Invalid URL". Acceptable; no data loss.
+  - >
+    (INFO) No test directly verifies vehicleRepository.UpdateAsync is called after image sync inside
+    EasyCarsStockMapper (mapper integration path for AC4). The existing mapper unit tests mock
+    IImageDownloadService to return empty list, so the UpdateAsync-after-images branch is not exercised
+    in unit tests. Covered implicitly by the ImageDownloadService tests (AC3/AC4 end-to-end in integration).
+    Consider adding a dedicated mapper test in a future story.

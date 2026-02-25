@@ -1,4 +1,5 @@
 D:\JealPrototypeTest\JealPrototypeTest\backend-dotnet\JealPrototype.Infrastructure\bin\Debug\net8.0\JealPrototype.Infrastructure.deps.json
+D:\JealPrototypeTest\JealPrototypeTest\backend-dotnet\JealPrototype.Infrastructure\bin\Debug\net8.0\JealPrototype.Infrastructure.runtimeconfig.json
 D:\JealPrototypeTest\JealPrototypeTest\backend-dotnet\JealPrototype.Infrastructure\bin\Debug\net8.0\JealPrototype.Infrastructure.dll
 D:\JealPrototypeTest\JealPrototypeTest\backend-dotnet\JealPrototype.Infrastructure\bin\Debug\net8.0\JealPrototype.Infrastructure.pdb
 D:\JealPrototypeTest\JealPrototypeTest\backend-dotnet\JealPrototype.Infrastructure\bin\Debug\net8.0\JealPrototype.Application.dll
@@ -15,6 +16,5 @@ D:\JealPrototypeTest\JealPrototypeTest\backend-dotnet\JealPrototype.Infrastructu
 D:\JealPrototypeTest\JealPrototypeTest\backend-dotnet\JealPrototype.Infrastructure\obj\Debug\net8.0\JealPrototype.Infrastructure.dll
 D:\JealPrototypeTest\JealPrototypeTest\backend-dotnet\JealPrototype.Infrastructure\obj\Debug\net8.0\refint\JealPrototype.Infrastructure.dll
 D:\JealPrototypeTest\JealPrototypeTest\backend-dotnet\JealPrototype.Infrastructure\obj\Debug\net8.0\JealPrototype.Infrastructure.pdb
-D:\JealPrototypeTest\JealPrototypeTest\backend-dotnet\JealPrototype.Infrastructure\obj\Debug\net8.0\ref\JealPrototype.Infrastructure.dll
-D:\JealPrototypeTest\JealPrototypeTest\backend-dotnet\JealPrototype.Infrastructure\bin\Debug\net8.0\JealPrototype.Infrastructure.runtimeconfig.json
 D:\JealPrototypeTest\JealPrototypeTest\backend-dotnet\JealPrototype.Infrastructure\obj\Debug\net8.0\JealPrototype.Infrastructure.genruntimeconfig.cache
+D:\JealPrototypeTest\JealPrototypeTest\backend-dotnet\JealPrototype.Infrastructure\obj\Debug\net8.0\ref\JealPrototype.Infrastructure.dll

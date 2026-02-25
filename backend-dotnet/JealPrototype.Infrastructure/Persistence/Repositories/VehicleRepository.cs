@@ -96,4 +96,22 @@ public class VehicleRepository : IVehicleRepository
         return await _context.Vehicles
             .FirstOrDefaultAsync(v => v.Id == id && v.DealershipId == dealershipId, cancellationToken);
     }
+
+    public async Task<Vehicle?> FindByVinAsync(string vin, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(vin))
+            return null;
+
+        return await _context.Vehicles
+            .FirstOrDefaultAsync(v => v.EasyCarsVIN == vin.Trim(), cancellationToken);
+    }
+
+    public async Task<Vehicle?> FindByStockNumberAsync(string stockNumber, int dealershipId, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(stockNumber))
+            return null;
+
+        return await _context.Vehicles
+            .FirstOrDefaultAsync(v => v.EasyCarsStockNumber == stockNumber && v.DealershipId == dealershipId, cancellationToken);
+    }
 }

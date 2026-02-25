@@ -1,4 +1,5 @@
 using JealPrototype.API.Extensions;
+using JealPrototype.API.Filters;
 using JealPrototype.API.Middleware;
 using JealPrototype.Application.UseCases.Auth;
 using JealPrototype.Application.UseCases.BlogPost;
@@ -8,11 +9,21 @@ using JealPrototype.Application.UseCases.Lead;
 using JealPrototype.Application.UseCases.SalesRequest;
 using JealPrototype.Application.UseCases.User;
 using JealPrototype.Application.UseCases.Vehicle;
+using JealPrototype.Domain.Interfaces;
+using AspNetCoreRateLimit;
+using Hangfire;
+using Hangfire.PostgreSql;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add environment variable support
 builder.Configuration.AddEnvironmentVariables();
+
+// Configure rate limiting
+builder.Services.AddMemoryCache();
+builder.Services.Configure<IpRateLimitOptions>(builder.Configuration.GetSection("IpRateLimiting"));
+builder.Services.AddInMemoryRateLimiting();
+builder.Services.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>();
 
 // Add CORS
 builder.Services.AddCors(options =>
@@ -49,10 +60,22 @@ builder.Services.AddApplicationServices();
 builder.Services.AddJwtAuthentication(builder.Configuration);
 builder.Services.AddAuthorization();
 
+// Add Hangfire
+builder.Services.AddHangfire(config => config
+    .UsePostgreSqlStorage(c => c.UseNpgsqlConnection(
+        builder.Configuration.GetConnectionString("DefaultConnection")))
+    .UseSimpleAssemblyNameTypeSerializer()
+    .UseRecommendedSerializerSettings());
+
+builder.Services.AddHangfireServer();
+
 // Register all Use Cases
 // Auth
 builder.Services.AddScoped<LoginUseCase>();
 builder.Services.AddScoped<GetCurrentUserUseCase>();
+
+// Background Jobs
+builder.Services.AddScoped<JealPrototype.Application.BackgroundJobs.StockSyncBackgroundJob>();
 
 // Dealership
 builder.Services.AddScoped<CreateDealershipUseCase>();
@@ -137,6 +160,8 @@ builder.Services.AddSwaggerGen(c =>
 var app = builder.Build();
 
 // Configure the HTTP request pipeline
+
+// Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -146,8 +171,17 @@ if (app.Environment.IsDevelopment())
 // Custom exception handling middleware
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
+// Rate limiting middleware
+app.UseIpRateLimiting();
+
 // CORS
 app.UseCors("AllowFrontend");
+
+// Hangfire Dashboard
+app.UseHangfireDashboard("/hangfire", new DashboardOptions
+{
+    Authorization = new[] { new HangfireAuthorizationFilter() }
+});
 
 // Authentication & Authorization
 app.UseAuthentication();
@@ -155,6 +189,20 @@ app.UseAuthorization();
 
 // Map controllers
 app.MapControllers();
+
+// Register Hangfire recurring jobs using service-based API (storage is ready after middleware pipeline)
+using (var scope = app.Services.CreateScope())
+{
+    var systemSettingsRepo = scope.ServiceProvider.GetRequiredService<ISystemSettingsRepository>();
+    var recurringJobManager = scope.ServiceProvider.GetRequiredService<IRecurringJobManager>();
+    var cronExpression = await systemSettingsRepo.GetValueAsync("easycar_sync_cron") ?? "0 2 * * *";
+
+    recurringJobManager.AddOrUpdate<JealPrototype.Application.BackgroundJobs.StockSyncBackgroundJob>(
+        "easycar-stock-sync",
+        job => job.ExecuteAsync(CancellationToken.None),
+        cronExpression,
+        new Hangfire.RecurringJobOptions { TimeZone = TimeZoneInfo.Utc });
+}
 
 app.Run();
 

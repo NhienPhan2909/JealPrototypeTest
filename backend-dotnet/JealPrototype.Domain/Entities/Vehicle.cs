@@ -16,6 +16,24 @@ public class Vehicle : BaseEntity
     public string? Description { get; private set; }
     public List<string> Images { get; private set; } = new();
 
+    // EasyCars Integration Fields
+    public string? EasyCarsStockNumber { get; private set; }
+    public string? EasyCarsYardCode { get; private set; }
+    public string? EasyCarsVIN { get; private set; }
+    public string? EasyCarsRawData { get; private set; }
+    public DataSource DataSource { get; private set; } = DataSource.Manual;
+    public DateTime? LastSyncedFromEasyCars { get; private set; }
+    
+    // Vehicle Attributes (from EasyCars API)
+    public string? ExteriorColor { get; private set; }
+    public string? InteriorColor { get; private set; }
+    public string? Body { get; private set; }
+    public string? FuelType { get; private set; }
+    public string? GearType { get; private set; }
+    public string? EngineCapacity { get; private set; }
+    public int? DoorCount { get; private set; }
+    public string? Features { get; private set; }
+
     public Dealership Dealership { get; private set; } = null!;
 
     private Vehicle() { }
@@ -108,5 +126,72 @@ public class Vehicle : BaseEntity
     public void UpdateStatus(VehicleStatus newStatus)
     {
         Status = newStatus;
+    }
+
+    public void UpdateEasyCarsData(
+        string? stockNumber,
+        string? yardCode,
+        string? vin,
+        string? rawData,
+        string? exteriorColor = null,
+        string? interiorColor = null,
+        string? body = null,
+        string? fuelType = null,
+        string? gearType = null,
+        string? engineCapacity = null,
+        int? doorCount = null,
+        string? features = null)
+    {
+        EasyCarsStockNumber = stockNumber;
+        EasyCarsYardCode = yardCode;
+        EasyCarsVIN = vin;
+        EasyCarsRawData = rawData;
+        DataSource = DataSource.EasyCars;
+        LastSyncedFromEasyCars = DateTime.UtcNow;
+        
+        ExteriorColor = exteriorColor;
+        InteriorColor = interiorColor;
+        Body = body;
+        FuelType = fuelType;
+        GearType = gearType;
+        EngineCapacity = engineCapacity;
+        DoorCount = doorCount;
+        Features = features;
+    }
+
+    public void SetEasyCarsData(
+        string stockNumber,
+        string yardCode,
+        string vin,
+        string exteriorColor,
+        string interiorColor,
+        string body,
+        string fuelType,
+        string gearType,
+        int engineCapacity,
+        int doorCount,
+        List<string> features,
+        string rawData)
+    {
+        EasyCarsStockNumber = stockNumber;
+        EasyCarsYardCode = yardCode;
+        EasyCarsVIN = vin;
+        ExteriorColor = exteriorColor;
+        InteriorColor = interiorColor;
+        Body = body;
+        FuelType = fuelType;
+        GearType = gearType;
+        EngineCapacity = engineCapacity.ToString();
+        DoorCount = doorCount;
+        
+        // Convert List<string> to JSON string for Features
+        if (features != null && features.Any())
+        {
+            Features = System.Text.Json.JsonSerializer.Serialize(features);
+        }
+        
+        EasyCarsRawData = rawData;
+        DataSource = DataSource.EasyCars;
+        LastSyncedFromEasyCars = DateTime.UtcNow;
     }
 }

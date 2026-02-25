@@ -22,6 +22,7 @@ import { AdminContext } from '../../context/AdminContext';
 import AdminHeader from '../../components/AdminHeader';
 import NavigationManager from '../../components/admin/NavigationManager';
 import TemplateSelector from '../../components/admin/TemplateSelector';
+import { EasyCarsSettings } from '../../components/admin/EasyCarsSettings';
 import Unauthorized from '../../components/Unauthorized';
 import { hasPermission } from '../../utils/permissions';
 import apiRequest from '../../utils/api';
@@ -1567,6 +1568,13 @@ function DealerSettings() {
             )}
           </div>
         </div>
+
+        {/* EasyCars Integration Settings Section (Story 1.5) */}
+        {canEditSettings && selectedDealership && (
+          <div className="max-w-4xl mx-auto mt-6">
+            <EasyCarsSettings dealershipId={selectedDealership.id} />
+          </div>
+        )}
       </div>
     </div>
   );

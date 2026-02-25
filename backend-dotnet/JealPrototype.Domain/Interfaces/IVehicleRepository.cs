@@ -16,4 +16,14 @@ public interface IVehicleRepository : IRepository<Vehicle>
         CancellationToken cancellationToken = default);
         
     Task<Vehicle?> GetByIdAndDealershipAsync(int id, int dealershipId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Finds a vehicle by VIN (Vehicle Identification Number)
+    /// </summary>
+    Task<Vehicle?> FindByVinAsync(string vin, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Finds a vehicle by stock number and dealership ID
+    /// </summary>
+    Task<Vehicle?> FindByStockNumberAsync(string stockNumber, int dealershipId, CancellationToken cancellationToken = default);
 }

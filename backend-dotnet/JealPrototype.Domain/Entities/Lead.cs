@@ -12,6 +12,17 @@ public class Lead : BaseEntity
     public string Message { get; private set; } = null!;
     public LeadStatus Status { get; private set; } = LeadStatus.Received;
 
+    // EasyCars Integration Fields
+    public string? EasyCarsLeadNumber { get; private set; }
+    public string? EasyCarsCustomerNo { get; private set; }
+    public string? EasyCarsRawData { get; private set; }
+    public DataSource DataSource { get; private set; } = DataSource.Manual;
+    public DateTime? LastSyncedToEasyCars { get; private set; }
+    public DateTime? LastSyncedFromEasyCars { get; private set; }
+    public string? VehicleInterestType { get; private set; }
+    public bool FinanceInterested { get; private set; } = false;
+    public string? Rating { get; private set; }
+
     public Dealership Dealership { get; private set; } = null!;
     public Vehicle? Vehicle { get; private set; }
 
@@ -55,4 +66,37 @@ public class Lead : BaseEntity
     {
         Status = newStatus;
     }
+
+    public void UpdateEasyCarsData(
+        string? leadNumber,
+        string? customerNo,
+        string? rawData,
+        string? vehicleInterestType = null,
+        bool financeInterested = false,
+        string? rating = null)
+    {
+        EasyCarsLeadNumber = leadNumber;
+        EasyCarsCustomerNo = customerNo;
+        EasyCarsRawData = rawData;
+        VehicleInterestType = vehicleInterestType;
+        FinanceInterested = financeInterested;
+        Rating = rating;
+        DataSource = DataSource.EasyCars;
+    }
+
+    public void SetEasyCarsData(
+        string leadNumber,
+        string customerNo,
+        string rawData)
+    {
+        EasyCarsLeadNumber = leadNumber;
+        EasyCarsCustomerNo = customerNo;
+        EasyCarsRawData = rawData;
+        DataSource = DataSource.EasyCars;
+        LastSyncedFromEasyCars = DateTime.UtcNow;
+    }
+
+    public void MarkSyncedToEasyCars(DateTime syncTime) => LastSyncedToEasyCars = syncTime;
+
+    public void MarkSyncedFromEasyCars(DateTime syncTime) => LastSyncedFromEasyCars = syncTime;
 }
