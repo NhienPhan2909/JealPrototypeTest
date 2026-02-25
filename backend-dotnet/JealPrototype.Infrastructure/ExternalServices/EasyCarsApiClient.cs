@@ -271,7 +271,7 @@ public class EasyCarsApiClient : IEasyCarsApiClient
         try
         {
             var baseUrl = GetBaseUrl(environment);
-            var requestUrl = $"{baseUrl}/RequestToken";
+            var requestUrl = $"{baseUrl}/PhotoService/RequestToken";
 
             _logger.LogInformation(
                 "Requesting token from EasyCars API. Environment: {Environment}",
@@ -281,19 +281,24 @@ public class EasyCarsApiClient : IEasyCarsApiClient
 
             var requestBody = new
             {
-                PublicID = accountNumber,
-                SecretKey = accountSecret
+                ClientID = accountNumber,
+                ClientSecret = accountSecret
             };
 
             var jsonContent = JsonSerializer.Serialize(requestBody);
+            _logger.LogDebug("EasyCars RequestToken body: {Body}", jsonContent);
+            _logger.LogInformation("EasyCars RequestToken sending ClientID length={IdLen}, first3={First}, ClientSecret length={SecLen}", 
+                accountNumber?.Length ?? 0, accountNumber?.Length > 3 ? accountNumber.Substring(0, 3) : accountNumber ?? "(null)",
+                accountSecret?.Length ?? 0);
             var httpContent = new StringContent(jsonContent, Encoding.UTF8, "application/json");
 
             var response = await httpClient.PostAsync(requestUrl, httpContent, cancellationToken);
 
             var responseContent = await response.Content.ReadAsStringAsync(cancellationToken);
+            _logger.LogInformation("EasyCars RequestToken response status={Status}, body={Body}", 
+                response.StatusCode, responseContent.Length > 300 ? responseContent.Substring(0, 300) : responseContent);
 
-            if (response.StatusCode == HttpStatusCode.Unauthorized || responseContent.Contains("\"ResponseCode\":1"))
-            {
+            if (response.StatusCode == HttpStatusCode.Unauthorized || responseContent.Contains("\"ResponseCode\":1"))            {
                 _logger.LogWarning(
                     "EasyCars authentication failed. Environment: {Environment}, Status: {StatusCode}",
                     environment, response.StatusCode);
@@ -472,22 +477,20 @@ public class EasyCarsApiClient : IEasyCarsApiClient
 
         try
         {
-            // Build endpoint with optional yardCode parameter
-            var endpoint = "/Stock/GetAdvertisementStocks";
-            if (!string.IsNullOrEmpty(yardCode))
-            {
-                endpoint += $"?yardCode={Uri.EscapeDataString(yardCode)}";
-            }
+            // Build request body with ClientID and optional YardCode
+            object requestBody = string.IsNullOrEmpty(yardCode)
+                ? new { ClientID = accountNumber }
+                : new { ClientID = accountNumber, YardCode = yardCode };
 
-            // Execute authenticated GET request
+            // Execute authenticated POST request
             var response = await ExecuteAuthenticatedRequestAsync<StockResponse>(
-                endpoint,
-                HttpMethod.Get,
+                "/StockService/GetAdvertisementStocks",
+                HttpMethod.Post,
                 accountNumber,
                 accountSecret,
                 environment,
                 dealershipId,
-                requestBody: null,
+                requestBody,
                 cancellationToken);
 
             // Return stocks or empty list if null
