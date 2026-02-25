@@ -17,6 +17,14 @@ public class EasyCarsCredentialConfiguration : IEntityTypeConfiguration<EasyCars
             .IsRequired()
             .HasColumnName("dealership_id");
 
+        builder.Property(c => c.ClientIdEncrypted)
+            .IsRequired()
+            .HasColumnName("client_id_encrypted");
+
+        builder.Property(c => c.ClientSecretEncrypted)
+            .IsRequired()
+            .HasColumnName("client_secret_encrypted");
+
         builder.Property(c => c.AccountNumberEncrypted)
             .IsRequired()
             .HasColumnName("account_number_encrypted");

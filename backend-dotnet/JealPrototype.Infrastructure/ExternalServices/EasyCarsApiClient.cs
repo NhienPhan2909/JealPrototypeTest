@@ -64,13 +64,13 @@ public class EasyCarsApiClient : IEasyCarsApiClient
 
     /// <inheritdoc />
     public async Task<string> GetOrRefreshTokenAsync(
-        string accountNumber,
-        string accountSecret,
+        string clientId,
+        string clientSecret,
         string environment,
         int dealershipId,
         CancellationToken cancellationToken = default)
     {
-        var cacheKey = GetTokenCacheKey(dealershipId, environment, accountNumber);
+        var cacheKey = GetTokenCacheKey(dealershipId, environment, clientId);
 
         // Thread-safe token acquisition
         await _tokenSemaphore.WaitAsync(cancellationToken);
@@ -93,7 +93,7 @@ public class EasyCarsApiClient : IEasyCarsApiClient
                 dealershipId, environment);
 
             var tokenResponse = await RequestTokenAsync(
-                accountNumber, accountSecret, environment, cancellationToken);
+                clientId, clientSecret, environment, cancellationToken);
 
             if (!tokenResponse.IsSuccess || string.IsNullOrEmpty(tokenResponse.Token))
             {
@@ -127,8 +127,8 @@ public class EasyCarsApiClient : IEasyCarsApiClient
     public async Task<T> ExecuteAuthenticatedRequestAsync<T>(
         string endpoint,
         HttpMethod method,
-        string accountNumber,
-        string accountSecret,
+        string clientId,
+        string clientSecret,
         string environment,
         int dealershipId,
         object? requestBody = null,
@@ -140,7 +140,7 @@ public class EasyCarsApiClient : IEasyCarsApiClient
         {
             // Get or refresh token
             var token = await GetOrRefreshTokenAsync(
-                accountNumber, accountSecret, environment, dealershipId, cancellationToken);
+                clientId, clientSecret, environment, dealershipId, cancellationToken);
 
             var baseUrl = GetBaseUrl(environment);
             var requestUrl = $"{baseUrl}{endpoint}";
@@ -179,12 +179,12 @@ public class EasyCarsApiClient : IEasyCarsApiClient
                     _logger.LogWarning(
                         "Received 401 Unauthorized, clearing token cache and refreshing");
 
-                    var cacheKey = GetTokenCacheKey(dealershipId, environment, accountNumber);
+                    var cacheKey = GetTokenCacheKey(dealershipId, environment, clientId);
                     _cache.Remove(cacheKey);
 
                     // Get new token
                     token = await GetOrRefreshTokenAsync(
-                        accountNumber, accountSecret, environment, dealershipId, cancellationToken);
+                        clientId, clientSecret, environment, dealershipId, cancellationToken);
 
                     // Retry request with new token
                     request.Headers.Remove("Authorization");
@@ -263,15 +263,15 @@ public class EasyCarsApiClient : IEasyCarsApiClient
 
     /// <inheritdoc />
     public async Task<EasyCarsTokenResponse> RequestTokenAsync(
-        string accountNumber,
-        string accountSecret,
+        string clientId,
+        string clientSecret,
         string environment,
         CancellationToken cancellationToken = default)
     {
         try
         {
             var baseUrl = GetBaseUrl(environment);
-            var requestUrl = $"{baseUrl}/PhotoService/RequestToken";
+            var requestUrl = $"{baseUrl}/StockService/RequestToken?ClientID={Uri.EscapeDataString(clientId)}&ClientSecret={Uri.EscapeDataString(clientSecret)}";
 
             _logger.LogInformation(
                 "Requesting token from EasyCars API. Environment: {Environment}",
@@ -279,18 +279,10 @@ public class EasyCarsApiClient : IEasyCarsApiClient
 
             var httpClient = _httpClientFactory.CreateClient("EasyCarsApi");
 
-            var requestBody = new
-            {
-                ClientID = accountNumber,
-                ClientSecret = accountSecret
-            };
-
-            var jsonContent = JsonSerializer.Serialize(requestBody);
-            _logger.LogDebug("EasyCars RequestToken body: {Body}", jsonContent);
             _logger.LogInformation("EasyCars RequestToken sending ClientID length={IdLen}, first3={First}, ClientSecret length={SecLen}", 
-                accountNumber?.Length ?? 0, accountNumber?.Length > 3 ? accountNumber.Substring(0, 3) : accountNumber ?? "(null)",
-                accountSecret?.Length ?? 0);
-            var httpContent = new StringContent(jsonContent, Encoding.UTF8, "application/json");
+                clientId?.Length ?? 0, clientId?.Length > 3 ? clientId.Substring(0, 3) : clientId ?? "(null)",
+                clientSecret?.Length ?? 0);
+            var httpContent = new StringContent("", Encoding.UTF8, "application/json");
 
             var response = await httpClient.PostAsync(requestUrl, httpContent, cancellationToken);
 
@@ -400,12 +392,12 @@ public class EasyCarsApiClient : IEasyCarsApiClient
 
     /// <inheritdoc />
     public async Task<bool> ValidateCredentialsAsync(
-        string accountNumber,
-        string accountSecret,
+        string clientId,
+        string clientSecret,
         string environment,
         CancellationToken cancellationToken = default)
     {
-        var response = await RequestTokenAsync(accountNumber, accountSecret, environment, cancellationToken);
+        var response = await RequestTokenAsync(clientId, clientSecret, environment, cancellationToken);
         return response.IsSuccess;
     }
 
@@ -464,6 +456,8 @@ public class EasyCarsApiClient : IEasyCarsApiClient
     /// Retrieves advertisement stocks from EasyCars API
     /// </summary>
     public async Task<List<StockItem>> GetAdvertisementStocksAsync(
+        string clientId,
+        string clientSecret,
         string accountNumber,
         string accountSecret,
         string environment,
@@ -477,17 +471,17 @@ public class EasyCarsApiClient : IEasyCarsApiClient
 
         try
         {
-            // Build request body with ClientID and optional YardCode
+            // Build request body with AccountNumber/AccountSecret and optional YardCode
             object requestBody = string.IsNullOrEmpty(yardCode)
-                ? new { ClientID = accountNumber }
-                : new { ClientID = accountNumber, YardCode = yardCode };
+                ? new { AccountNumber = accountNumber, AccountSecret = accountSecret }
+                : new { AccountNumber = accountNumber, AccountSecret = accountSecret, YardCode = yardCode };
 
-            // Execute authenticated POST request
+            // Execute authenticated POST request (clientId/clientSecret used for token auth)
             var response = await ExecuteAuthenticatedRequestAsync<StockResponse>(
                 "/StockService/GetAdvertisementStocks",
                 HttpMethod.Post,
-                accountNumber,
-                accountSecret,
+                clientId,
+                clientSecret,
                 environment,
                 dealershipId,
                 requestBody,

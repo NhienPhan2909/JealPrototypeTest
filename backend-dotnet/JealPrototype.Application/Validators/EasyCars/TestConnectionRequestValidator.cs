@@ -10,17 +10,29 @@ public class TestConnectionRequestValidator : AbstractValidator<TestConnectionRe
 {
     public TestConnectionRequestValidator()
     {
+        RuleFor(x => x.ClientId)
+            .NotEmpty()
+            .WithMessage("Client ID is required")
+            .MaximumLength(200)
+            .WithMessage("Client ID cannot exceed 200 characters");
+
+        RuleFor(x => x.ClientSecret)
+            .NotEmpty()
+            .WithMessage("Client Secret is required")
+            .MaximumLength(200)
+            .WithMessage("Client Secret cannot exceed 200 characters");
+
         RuleFor(x => x.AccountNumber)
             .NotEmpty()
             .WithMessage("Account Number is required")
-            .Matches(@"^[0-9A-Fa-f]{8}-([0-9A-Fa-f]{4}-){3}[0-9A-Fa-f]{12}$")
-            .WithMessage("Account Number must be a valid GUID format");
+            .MaximumLength(100)
+            .WithMessage("Account Number cannot exceed 100 characters");
 
         RuleFor(x => x.AccountSecret)
             .NotEmpty()
             .WithMessage("Account Secret is required")
-            .Matches(@"^[0-9A-Fa-f]{8}-([0-9A-Fa-f]{4}-){3}[0-9A-Fa-f]{12}$")
-            .WithMessage("Account Secret must be a valid GUID format");
+            .MaximumLength(100)
+            .WithMessage("Account Secret cannot exceed 100 characters");
 
         RuleFor(x => x.Environment)
             .NotEmpty()

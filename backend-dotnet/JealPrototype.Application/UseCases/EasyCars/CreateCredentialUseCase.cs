@@ -53,6 +53,8 @@ public class CreateCredentialUseCase
         }
 
         // 3. Encrypt credentials
+        var encryptedClientId = await _encryptionService.EncryptAsync(request.ClientId);
+        var encryptedClientSecret = await _encryptionService.EncryptAsync(request.ClientSecret);
         var encryptedAccountNumber = await _encryptionService.EncryptAsync(request.AccountNumber);
         var encryptedAccountSecret = await _encryptionService.EncryptAsync(request.AccountSecret);
 
@@ -62,6 +64,8 @@ public class CreateCredentialUseCase
         // 4. Create entity using factory method
         var credential = EasyCarsCredential.Create(
             dealershipId: dealershipId,
+            clientIdEncrypted: encryptedClientId,
+            clientSecretEncrypted: encryptedClientSecret,
             accountNumberEncrypted: encryptedAccountNumber,
             accountSecretEncrypted: encryptedAccountSecret,
             encryptionIV: encryptionIV,

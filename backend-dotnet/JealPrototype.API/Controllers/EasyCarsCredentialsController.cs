@@ -3,7 +3,6 @@ using JealPrototype.Application.Exceptions;
 using JealPrototype.Application.UseCases.EasyCars;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 
 namespace JealPrototype.API.Controllers;
 
@@ -46,12 +45,13 @@ public class EasyCarsCredentialsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<ActionResult<CredentialResponse>> CreateCredential(
-        [FromBody] CreateCredentialRequest request)
+        [FromBody] CreateCredentialRequest request,
+        [FromQuery] int? dealershipId)
     {
         try
         {
-            var dealershipId = GetDealershipIdFromClaims();
-            var response = await _createUseCase.ExecuteAsync(dealershipId, request);
+            var effectiveDealershipId = ResolveEffectiveDealershipId(dealershipId);
+            var response = await _createUseCase.ExecuteAsync(effectiveDealershipId, request);
             return CreatedAtAction(nameof(GetCredential), new { credentialId = response.Id }, response);
         }
         catch (DuplicateCredentialException ex)
@@ -79,12 +79,12 @@ public class EasyCarsCredentialsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<CredentialMetadataResponse>> GetCredential()
+    public async Task<ActionResult<CredentialMetadataResponse>> GetCredential([FromQuery] int? dealershipId)
     {
         try
         {
-            var dealershipId = GetDealershipIdFromClaims();
-            var response = await _getUseCase.ExecuteAsync(dealershipId);
+            var effectiveDealershipId = ResolveEffectiveDealershipId(dealershipId);
+            var response = await _getUseCase.ExecuteAsync(effectiveDealershipId);
             return Ok(response);
         }
         catch (CredentialNotFoundException ex)
@@ -112,12 +112,13 @@ public class EasyCarsCredentialsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<CredentialResponse>> UpdateCredential(
         int credentialId,
-        [FromBody] UpdateCredentialRequest request)
+        [FromBody] UpdateCredentialRequest request,
+        [FromQuery] int? dealershipId)
     {
         try
         {
-            var dealershipId = GetDealershipIdFromClaims();
-            var response = await _updateUseCase.ExecuteAsync(dealershipId, credentialId, request);
+            var effectiveDealershipId = ResolveEffectiveDealershipId(dealershipId);
+            var response = await _updateUseCase.ExecuteAsync(effectiveDealershipId, credentialId, request);
             return Ok(response);
         }
         catch (CredentialNotFoundException ex)
@@ -146,12 +147,12 @@ public class EasyCarsCredentialsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult> DeleteCredential(int credentialId)
+    public async Task<ActionResult> DeleteCredential(int credentialId, [FromQuery] int? dealershipId)
     {
         try
         {
-            var dealershipId = GetDealershipIdFromClaims();
-            await _deleteUseCase.ExecuteAsync(dealershipId, credentialId);
+            var effectiveDealershipId = ResolveEffectiveDealershipId(dealershipId);
+            await _deleteUseCase.ExecuteAsync(effectiveDealershipId, credentialId);
             return NoContent();
         }
         catch (CredentialNotFoundException ex)
@@ -172,17 +173,23 @@ public class EasyCarsCredentialsController : ControllerBase
     }
 
     /// <summary>
-    /// Extracts dealership ID from JWT claims
+    /// <summary>
+    /// Resolves the effective dealership ID from query param (admin) or JWT claims (owner/staff)
     /// </summary>
-    private int GetDealershipIdFromClaims()
+    private int ResolveEffectiveDealershipId(int? requestedDealershipId)
     {
-        var dealershipIdClaim = User.FindFirst("DealershipId")?.Value
-            ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var userType = User.FindFirst("usertype")?.Value;
 
-        if (string.IsNullOrEmpty(dealershipIdClaim) || !int.TryParse(dealershipIdClaim, out int dealershipId))
+        if ("admin".Equals(userType, StringComparison.OrdinalIgnoreCase))
         {
-            throw new UnauthorizedAccessException("Invalid or missing dealership ID in token");
+            if (!requestedDealershipId.HasValue)
+                throw new UnauthorizedAccessException("Dealership ID is required for admin users");
+            return requestedDealershipId.Value;
         }
+
+        var dealershipIdClaim = User.FindFirst("dealershipid")?.Value;
+        if (string.IsNullOrEmpty(dealershipIdClaim) || !int.TryParse(dealershipIdClaim, out int dealershipId))
+            throw new UnauthorizedAccessException("Invalid or missing dealership ID in token");
 
         return dealershipId;
     }

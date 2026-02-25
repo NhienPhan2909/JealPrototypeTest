@@ -50,10 +50,22 @@ public class UpdateCredentialUseCase
         }
 
         // 3. Prepare update values - use existing if not provided
+        string clientIdEncrypted = credential.ClientIdEncrypted;
+        string clientSecretEncrypted = credential.ClientSecretEncrypted;
         string accountNumberEncrypted = credential.AccountNumberEncrypted;
         string accountSecretEncrypted = credential.AccountSecretEncrypted;
         string environment = credential.Environment;
         string? yardCode = credential.YardCode;
+
+        if (!string.IsNullOrEmpty(request.ClientId))
+        {
+            clientIdEncrypted = await _encryptionService.EncryptAsync(request.ClientId);
+        }
+
+        if (!string.IsNullOrEmpty(request.ClientSecret))
+        {
+            clientSecretEncrypted = await _encryptionService.EncryptAsync(request.ClientSecret);
+        }
 
         if (!string.IsNullOrEmpty(request.AccountNumber))
         {
@@ -80,6 +92,8 @@ public class UpdateCredentialUseCase
 
         // 4. Update credential using entity method
         credential.UpdateCredentials(
+            clientIdEncrypted: clientIdEncrypted,
+            clientSecretEncrypted: clientSecretEncrypted,
             accountNumberEncrypted: accountNumberEncrypted,
             accountSecretEncrypted: accountSecretEncrypted,
             encryptionIV: encryptionIV,

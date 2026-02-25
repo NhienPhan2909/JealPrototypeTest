@@ -38,18 +38,18 @@ public class EasyCarsStockSyncController : ControllerBase
     [HttpGet("sync-status")]
     [ProducesResponseType(typeof(SyncStatusDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public async Task<ActionResult<SyncStatusDto>> GetSyncStatus(CancellationToken cancellationToken)
+    public async Task<ActionResult<SyncStatusDto>> GetSyncStatus([FromQuery] int? dealershipId, CancellationToken cancellationToken)
     {
         try
         {
-            var dealershipId = GetDealershipIdFromClaims();
-            _logger.LogInformation("Fetching sync status for dealership {DealershipId}", dealershipId);
+            var effectiveDealershipId = ResolveEffectiveDealershipId(dealershipId);
+            _logger.LogInformation("Fetching sync status for dealership {DealershipId}", effectiveDealershipId);
 
             // Get last sync log
-            var lastSync = await _syncLogRepository.GetLastSyncAsync(dealershipId, cancellationToken);
+            var lastSync = await _syncLogRepository.GetLastSyncAsync(effectiveDealershipId, cancellationToken);
 
             // Check if credentials exist
-            var credential = await _credentialRepository.GetByDealershipIdAsync(dealershipId);
+            var credential = await _credentialRepository.GetByDealershipIdAsync(effectiveDealershipId);
             var hasCredentials = credential != null;
 
             var response = new SyncStatusDto
@@ -82,42 +82,41 @@ public class EasyCarsStockSyncController : ControllerBase
     /// Endpoint: POST /api/easycars/sync/trigger
     /// </summary>
     [HttpPost("sync/trigger")]
-    [Authorize(Roles = "Admin,DealershipAdmin")]
     [ProducesResponseType(typeof(TriggerSyncResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
-    public async Task<ActionResult<TriggerSyncResponse>> TriggerSync(CancellationToken cancellationToken)
+    public async Task<ActionResult<TriggerSyncResponse>> TriggerSync([FromQuery] int? dealershipId, CancellationToken cancellationToken)
     {
         try
         {
-            var dealershipId = GetDealershipIdFromClaims();
-            _logger.LogInformation("Manual sync triggered for dealership {DealershipId}", dealershipId);
+            var effectiveDealershipId = ResolveEffectiveDealershipId(dealershipId);
+            _logger.LogInformation("Manual sync triggered for dealership {DealershipId}", effectiveDealershipId);
 
             // Validate credentials exist
-            var credential = await _credentialRepository.GetByDealershipIdAsync(dealershipId);
+            var credential = await _credentialRepository.GetByDealershipIdAsync(effectiveDealershipId);
             if (credential == null)
             {
-                _logger.LogWarning("Sync trigger failed: No credentials for dealership {DealershipId}", dealershipId);
+                _logger.LogWarning("Sync trigger failed: No credentials for dealership {DealershipId}", effectiveDealershipId);
                 return BadRequest(new { error = "EasyCars credentials not configured. Please configure credentials first." });
             }
 
             // Rate limiting: prevent sync spam (max 1 manual trigger per 60 seconds)
-            var lastSync = await _syncLogRepository.GetLastSyncAsync(dealershipId, cancellationToken);
+            var lastSync = await _syncLogRepository.GetLastSyncAsync(effectiveDealershipId, cancellationToken);
             if (lastSync != null && (DateTime.UtcNow - lastSync.SyncedAt).TotalSeconds < 60)
             {
                 _logger.LogWarning("Rate limit exceeded: Sync already triggered for dealership {DealershipId} at {LastSync}", 
-                    dealershipId, lastSync.SyncedAt);
+                    effectiveDealershipId, lastSync.SyncedAt);
                 return StatusCode(StatusCodes.Status429TooManyRequests, 
                     new { error = "Sync already triggered recently. Please wait 60 seconds before triggering again." });
             }
 
             // Enqueue background job using Hangfire
             var jobId = BackgroundJob.Enqueue<StockSyncBackgroundJob>(job => 
-                job.ExecuteManualSyncAsync(dealershipId, CancellationToken.None));
+                job.ExecuteManualSyncAsync(effectiveDealershipId, CancellationToken.None));
 
-            _logger.LogInformation("Sync job {JobId} enqueued for dealership {DealershipId}", jobId, dealershipId);
+            _logger.LogInformation("Sync job {JobId} enqueued for dealership {DealershipId}", jobId, effectiveDealershipId);
 
             var response = new TriggerSyncResponse
             {
@@ -149,15 +148,16 @@ public class EasyCarsStockSyncController : ControllerBase
     public async Task<ActionResult<SyncHistoryResponse>> GetSyncHistory(
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 10,
+        [FromQuery] int? dealershipId = null,
         CancellationToken cancellationToken = default)
     {
         try
         {
-            var dealershipId = GetDealershipIdFromClaims();
+            var effectiveDealershipId = ResolveEffectiveDealershipId(dealershipId);
             _logger.LogInformation("Fetching sync history for dealership {DealershipId} (page {Page}, size {PageSize})", 
-                dealershipId, page, pageSize);
+                effectiveDealershipId, page, pageSize);
 
-            var (logs, total) = await _syncLogRepository.GetPagedHistoryAsync(dealershipId, page, pageSize, cancellationToken);
+            var (logs, total) = await _syncLogRepository.GetPagedHistoryAsync(effectiveDealershipId, page, pageSize, cancellationToken);
 
             var totalPages = (int)Math.Ceiling(total / (double)pageSize);
 
@@ -203,12 +203,13 @@ public class EasyCarsStockSyncController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<SyncLogDetailsDto>> GetSyncLogDetails(
         int id,
+        [FromQuery] int? dealershipId,
         CancellationToken cancellationToken)
     {
         try
         {
-            var dealershipId = GetDealershipIdFromClaims();
-            _logger.LogInformation("Fetching sync log {LogId} for dealership {DealershipId}", id, dealershipId);
+            var effectiveDealershipId = ResolveEffectiveDealershipId(dealershipId);
+            _logger.LogInformation("Fetching sync log {LogId} for dealership {DealershipId}", id, effectiveDealershipId);
 
             var log = await _syncLogRepository.GetByIdAsync(id, cancellationToken);
 
@@ -219,9 +220,9 @@ public class EasyCarsStockSyncController : ControllerBase
             }
 
             // Verify log belongs to user's dealership (security check)
-            if (log.DealershipId != dealershipId)
+            if (log.DealershipId != effectiveDealershipId)
             {
-                _logger.LogWarning("Unauthorized access to sync log {LogId} by dealership {DealershipId}", id, dealershipId);
+                _logger.LogWarning("Unauthorized access to sync log {LogId} by dealership {DealershipId}", id, effectiveDealershipId);
                 return NotFound(new { error = "Sync log not found" });
             }
 
@@ -264,16 +265,22 @@ public class EasyCarsStockSyncController : ControllerBase
     }
 
     /// <summary>
-    /// Extracts dealership ID from JWT claims
+    /// Resolves the effective dealership ID from query param (admin) or JWT claims (owner/staff)
     /// </summary>
-    private int GetDealershipIdFromClaims()
+    private int ResolveEffectiveDealershipId(int? requestedDealershipId)
     {
-        var dealershipIdClaim = User.FindFirst("DealershipId")?.Value;
+        var userType = User.FindFirst("usertype")?.Value;
 
-        if (string.IsNullOrEmpty(dealershipIdClaim) || !int.TryParse(dealershipIdClaim, out int dealershipId))
+        if ("admin".Equals(userType, StringComparison.OrdinalIgnoreCase))
         {
-            throw new UnauthorizedAccessException("Invalid or missing dealership ID in token");
+            if (!requestedDealershipId.HasValue)
+                throw new UnauthorizedAccessException("Dealership ID is required for admin users");
+            return requestedDealershipId.Value;
         }
+
+        var dealershipIdClaim = User.FindFirst("dealershipid")?.Value;
+        if (string.IsNullOrEmpty(dealershipIdClaim) || !int.TryParse(dealershipIdClaim, out int dealershipId))
+            throw new UnauthorizedAccessException("Invalid or missing dealership ID in token");
 
         return dealershipId;
     }

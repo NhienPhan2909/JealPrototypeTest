@@ -8,6 +8,20 @@ namespace JealPrototype.Application.DTOs.EasyCars;
 public class CreateCredentialRequest
 {
     /// <summary>
+    /// EasyCars Client ID - used for token authentication
+    /// </summary>
+    [Required]
+    [MaxLength(200)]
+    public string ClientId { get; set; } = string.Empty;
+
+    /// <summary>
+    /// EasyCars Client Secret - used for token authentication
+    /// </summary>
+    [Required]
+    [MaxLength(200)]
+    public string ClientSecret { get; set; } = string.Empty;
+
+    /// <summary>
     /// EasyCars Account Number (PublicID) - GUID format
     /// </summary>
     [Required]

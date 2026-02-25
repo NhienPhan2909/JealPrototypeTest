@@ -119,10 +119,14 @@ public class EasyCarsStockSyncService : IEasyCarsStockSyncService
         try
         {
             // Decrypt credentials before passing to API client
+            var clientId = await _encryptionService.DecryptAsync(credential.ClientIdEncrypted);
+            var clientSecret = await _encryptionService.DecryptAsync(credential.ClientSecretEncrypted);
             var accountNumber = await _encryptionService.DecryptAsync(credential.AccountNumberEncrypted);
             var accountSecret = await _encryptionService.DecryptAsync(credential.AccountSecretEncrypted);
 
             var stockItems = await _apiClient.GetAdvertisementStocksAsync(
+                clientId,
+                clientSecret,
                 accountNumber,
                 accountSecret,
                 credential.Environment,

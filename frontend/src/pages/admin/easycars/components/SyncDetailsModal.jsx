@@ -11,7 +11,7 @@ import { formatDateTime, formatDuration } from '../utils/syncFormatters';
 /**
  * SyncDetailsModal - Modal displaying detailed sync log information
  */
-export default function SyncDetailsModal({ syncLogId, onClose }) {
+export default function SyncDetailsModal({ syncLogId, dealershipId, onClose }) {
   const [details, setDetails] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -22,7 +22,7 @@ export default function SyncDetailsModal({ syncLogId, onClose }) {
       setError(null);
 
       try {
-        const response = await apiRequest(`/api/easycars/sync-logs/${syncLogId}`);
+        const response = await apiRequest(`/api/easycars/sync-logs/${syncLogId}?dealershipId=${dealershipId}`);
         
         if (response.ok) {
           const data = await response.json();
@@ -225,5 +225,6 @@ ${details.errors.length > 0 ? 'Errors:\n' + details.errors.map((e, i) => `${i + 
 
 SyncDetailsModal.propTypes = {
   syncLogId: PropTypes.number.isRequired,
+  dealershipId: PropTypes.number,
   onClose: PropTypes.func.isRequired
 };

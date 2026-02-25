@@ -36,7 +36,8 @@ export default function StockSyncAdminPage() {
    */
   const fetchSyncStatus = async () => {
     try {
-      const response = await apiRequest('/api/easycars/sync-status');
+      const dealershipId = selectedDealership?.id;
+      const response = await apiRequest(`/api/easycars/sync-status?dealershipId=${dealershipId}`);
       
       if (response.ok) {
         const data = await response.json();
@@ -66,7 +67,8 @@ export default function StockSyncAdminPage() {
    */
   const fetchSyncHistory = async () => {
     try {
-      const response = await apiRequest('/api/easycars/sync-history?page=1&pageSize=10');
+      const dealershipId = selectedDealership?.id;
+      const response = await apiRequest(`/api/easycars/sync-history?page=1&pageSize=10&dealershipId=${dealershipId}`);
       
       if (response.ok) {
         const data = await response.json();
@@ -173,7 +175,7 @@ export default function StockSyncAdminPage() {
       setIsSyncing(true);
       showToast('info', 'Sync started...');
 
-      const response = await apiRequest('/api/easycars/sync/trigger', {
+      const response = await apiRequest(`/api/easycars/sync/trigger?dealershipId=${selectedDealership?.id}`, {
         method: 'POST'
       });
 
@@ -184,9 +186,13 @@ export default function StockSyncAdminPage() {
         // Start polling for status updates
         startPolling();
       } else {
-        const errorData = await response.json();
+        let errorMsg = 'Unknown error';
+        try {
+          const errorData = await response.json();
+          errorMsg = errorData.error || errorMsg;
+        } catch (_) { /* empty body */ }
         setIsSyncing(false);
-        showToast('error', `Failed to start sync: ${errorData.error || 'Unknown error'}`);
+        showToast('error', `Failed to start sync: ${errorMsg}`);
       }
     } catch (err) {
       console.error('Error triggering sync:', err);
@@ -308,6 +314,7 @@ export default function StockSyncAdminPage() {
         {selectedLogId && (
           <SyncDetailsModal
             syncLogId={selectedLogId}
+            dealershipId={selectedDealership?.id}
             onClose={handleCloseModal}
           />
         )}

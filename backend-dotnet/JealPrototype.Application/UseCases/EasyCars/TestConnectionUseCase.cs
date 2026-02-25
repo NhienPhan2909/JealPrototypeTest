@@ -37,8 +37,8 @@ public class TestConnectionUseCase
         try
         {
             var tokenResponse = await _easyCarsApiClient.RequestTokenAsync(
-                request.AccountNumber,
-                request.AccountSecret,
+                request.ClientId,
+                request.ClientSecret,
                 request.Environment,
                 cancellationToken);
 

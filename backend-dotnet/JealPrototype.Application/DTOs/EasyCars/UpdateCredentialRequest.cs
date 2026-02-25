@@ -8,6 +8,16 @@ namespace JealPrototype.Application.DTOs.EasyCars;
 public class UpdateCredentialRequest
 {
     /// <summary>
+    /// EasyCars Client ID - used for token authentication (optional for updates)
+    /// </summary>
+    public string? ClientId { get; set; }
+
+    /// <summary>
+    /// EasyCars Client Secret - used for token authentication (optional for updates)
+    /// </summary>
+    public string? ClientSecret { get; set; }
+
+    /// <summary>
     /// EasyCars Account Number (PublicID) - GUID format (optional for updates)
     /// </summary>
     public string? AccountNumber { get; set; }

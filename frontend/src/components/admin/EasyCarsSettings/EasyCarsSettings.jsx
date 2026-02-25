@@ -48,6 +48,8 @@ const EasyCarsSettings = ({ dealershipId }) => {
   } = useForm({
     mode: 'onBlur',
     defaultValues: {
+      clientId: '',
+      clientSecret: '',
       accountNumber: '',
       accountSecret: '',
       environment: 'Test',
@@ -84,13 +86,15 @@ const EasyCarsSettings = ({ dealershipId }) => {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await apiRequest('/api/admin/easycars/credentials');
+      const response = await apiRequest(`/api/admin/easycars/credentials?dealershipId=${dealershipId}`);
       if (response.ok) {
         const data = await response.json();
         if (data) {
           setCredentials(data);
           setIsConfigured(true);
           reset({
+            clientId: data.clientId || '',
+            clientSecret: '', // Never pre-fill secret
             accountNumber: data.accountNumber || '',
             accountSecret: '', // Never pre-fill secret
             environment: data.environment || 'Test',
@@ -124,6 +128,8 @@ const EasyCarsSettings = ({ dealershipId }) => {
       const response = await apiRequest('/api/admin/easycars/test-connection', {
         method: 'POST',
         body: JSON.stringify({
+          clientId: watchedFields.clientId,
+          clientSecret: watchedFields.clientSecret,
           accountNumber: watchedFields.accountNumber,
           accountSecret: watchedFields.accountSecret,
           environment: watchedFields.environment
@@ -164,12 +170,14 @@ const EasyCarsSettings = ({ dealershipId }) => {
     try {
       const method = credentials ? 'PUT' : 'POST';
       const url = credentials
-        ? `/api/admin/easycars/credentials/${credentials.id}`
-        : '/api/admin/easycars/credentials';
+        ? `/api/admin/easycars/credentials/${credentials.id}?dealershipId=${dealershipId}`
+        : `/api/admin/easycars/credentials?dealershipId=${dealershipId}`;
 
       const response = await apiRequest(url, {
         method,
         body: JSON.stringify({
+          clientId: formData.clientId,
+          clientSecret: formData.clientSecret,
           accountNumber: formData.accountNumber,
           accountSecret: formData.accountSecret,
           environment: formData.environment,
@@ -186,9 +194,10 @@ const EasyCarsSettings = ({ dealershipId }) => {
         setTestResult(null);
         await fetchCredentials();
 
-        // Clear the secret field for security
+        // Clear the secret fields for security
         reset({
           ...formData,
+          clientSecret: '',
           accountSecret: ''
         });
       } else {
@@ -212,7 +221,7 @@ const EasyCarsSettings = ({ dealershipId }) => {
 
     try {
       const response = await apiRequest(
-        `/api/admin/easycars/credentials/${credentials.id}`,
+        `/api/admin/easycars/credentials/${credentials.id}?dealershipId=${dealershipId}`,
         { method: 'DELETE' }
       );
 
@@ -222,6 +231,8 @@ const EasyCarsSettings = ({ dealershipId }) => {
         setIsConfigured(false);
         setShowDeleteDialog(false);
         reset({
+          clientId: '',
+          clientSecret: '',
           accountNumber: '',
           accountSecret: '',
           environment: 'Test',
@@ -257,6 +268,8 @@ const EasyCarsSettings = ({ dealershipId }) => {
     // Reset form to original values
     if (credentials) {
       reset({
+        clientId: credentials.clientId || '',
+        clientSecret: '',
         accountNumber: credentials.accountNumber || '',
         accountSecret: '',
         environment: credentials.environment || 'Test',

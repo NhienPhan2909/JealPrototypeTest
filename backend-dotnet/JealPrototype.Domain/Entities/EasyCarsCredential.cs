@@ -3,6 +3,8 @@ namespace JealPrototype.Domain.Entities;
 public class EasyCarsCredential : BaseEntity
 {
     public int DealershipId { get; private set; }
+    public string ClientIdEncrypted { get; private set; } = null!;
+    public string ClientSecretEncrypted { get; private set; } = null!;
     public string AccountNumberEncrypted { get; private set; } = null!;
     public string AccountSecretEncrypted { get; private set; } = null!;
     public string EncryptionIV { get; private set; } = null!;
@@ -17,6 +19,8 @@ public class EasyCarsCredential : BaseEntity
 
     public static EasyCarsCredential Create(
         int dealershipId,
+        string clientIdEncrypted,
+        string clientSecretEncrypted,
         string accountNumberEncrypted,
         string accountSecretEncrypted,
         string encryptionIV,
@@ -26,6 +30,12 @@ public class EasyCarsCredential : BaseEntity
     {
         if (dealershipId <= 0)
             throw new ArgumentException("Invalid dealership ID", nameof(dealershipId));
+
+        if (string.IsNullOrWhiteSpace(clientIdEncrypted))
+            throw new ArgumentException("Client ID encrypted is required", nameof(clientIdEncrypted));
+
+        if (string.IsNullOrWhiteSpace(clientSecretEncrypted))
+            throw new ArgumentException("Client secret encrypted is required", nameof(clientSecretEncrypted));
 
         if (string.IsNullOrWhiteSpace(accountNumberEncrypted))
             throw new ArgumentException("Account number encrypted is required", nameof(accountNumberEncrypted));
@@ -45,6 +55,8 @@ public class EasyCarsCredential : BaseEntity
         return new EasyCarsCredential
         {
             DealershipId = dealershipId,
+            ClientIdEncrypted = clientIdEncrypted,
+            ClientSecretEncrypted = clientSecretEncrypted,
             AccountNumberEncrypted = accountNumberEncrypted,
             AccountSecretEncrypted = accountSecretEncrypted,
             EncryptionIV = encryptionIV,
@@ -55,6 +67,8 @@ public class EasyCarsCredential : BaseEntity
     }
 
     public void UpdateCredentials(
+        string clientIdEncrypted,
+        string clientSecretEncrypted,
         string accountNumberEncrypted,
         string accountSecretEncrypted,
         string encryptionIV,
@@ -64,6 +78,8 @@ public class EasyCarsCredential : BaseEntity
         if (environment != "Test" && environment != "Production")
             throw new ArgumentException("Environment must be 'Test' or 'Production'", nameof(environment));
 
+        ClientIdEncrypted = clientIdEncrypted;
+        ClientSecretEncrypted = clientSecretEncrypted;
         AccountNumberEncrypted = accountNumberEncrypted;
         AccountSecretEncrypted = accountSecretEncrypted;
         EncryptionIV = encryptionIV;

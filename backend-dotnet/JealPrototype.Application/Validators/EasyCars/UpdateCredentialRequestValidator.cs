@@ -10,15 +10,25 @@ public class UpdateCredentialRequestValidator : AbstractValidator<UpdateCredenti
 {
     public UpdateCredentialRequestValidator()
     {
+        RuleFor(x => x.ClientId)
+            .MaximumLength(200)
+            .When(x => !string.IsNullOrEmpty(x.ClientId))
+            .WithMessage("Client ID cannot exceed 200 characters");
+
+        RuleFor(x => x.ClientSecret)
+            .MaximumLength(200)
+            .When(x => !string.IsNullOrEmpty(x.ClientSecret))
+            .WithMessage("Client Secret cannot exceed 200 characters");
+
         RuleFor(x => x.AccountNumber)
-            .Matches(@"^[0-9A-Fa-f]{8}-([0-9A-Fa-f]{4}-){3}[0-9A-Fa-f]{12}$")
+            .MaximumLength(100)
             .When(x => !string.IsNullOrEmpty(x.AccountNumber))
-            .WithMessage("Account Number must be a valid GUID format");
+            .WithMessage("Account Number cannot exceed 100 characters");
 
         RuleFor(x => x.AccountSecret)
-            .Matches(@"^[0-9A-Fa-f]{8}-([0-9A-Fa-f]{4}-){3}[0-9A-Fa-f]{12}$")
+            .MaximumLength(100)
             .When(x => !string.IsNullOrEmpty(x.AccountSecret))
-            .WithMessage("Account Secret must be a valid GUID format");
+            .WithMessage("Account Secret cannot exceed 100 characters");
 
         RuleFor(x => x.Environment)
             .Must(env => env == "Test" || env == "Production")
