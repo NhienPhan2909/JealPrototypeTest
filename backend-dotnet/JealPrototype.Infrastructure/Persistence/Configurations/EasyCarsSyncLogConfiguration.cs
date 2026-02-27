@@ -67,6 +67,11 @@ public class EasyCarsSyncLogConfiguration : IEntityTypeConfiguration<EasyCarsSyn
             .IsRequired()
             .HasDefaultValue("1.0");
 
+        builder.Property(e => e.SyncType)
+            .HasColumnName("sync_type")
+            .HasMaxLength(50)
+            .IsRequired(false);
+
         builder.Property(e => e.CreatedAt)
             .HasColumnName("created_at")
             .IsRequired();
@@ -90,5 +95,8 @@ public class EasyCarsSyncLogConfiguration : IEntityTypeConfiguration<EasyCarsSyn
 
         builder.HasIndex(e => e.Status)
             .HasDatabaseName("idx_easycar_sync_logs_status");
+
+        builder.HasIndex(e => new { e.DealershipId, e.SyncType, e.SyncedAt })
+            .HasDatabaseName("idx_easycar_sync_logs_dealership_type_time");
     }
 }

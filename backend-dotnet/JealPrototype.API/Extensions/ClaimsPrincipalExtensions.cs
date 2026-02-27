@@ -6,7 +6,7 @@ public static class ClaimsPrincipalExtensions
 {
     public static int? GetDealershipId(this ClaimsPrincipal user)
     {
-        var claim = user.FindFirst("dealership_id")?.Value;
+        var claim = user.FindFirst("dealershipid")?.Value;
         return int.TryParse(claim, out var id) ? id : null;
     }
 
@@ -21,17 +21,17 @@ public static class ClaimsPrincipalExtensions
 
     public static bool IsAdmin(this ClaimsPrincipal user)
     {
-        return user.FindFirst("user_type")?.Value == "Admin";
+        return user.FindFirst("usertype")?.Value == "Admin";
     }
 
     public static bool IsDealershipOwner(this ClaimsPrincipal user)
     {
-        return user.FindFirst("user_type")?.Value == "DealershipOwner";
+        return user.FindFirst("usertype")?.Value == "DealershipOwner";
     }
 
     public static string GetUserType(this ClaimsPrincipal user)
     {
-        return user.FindFirst("user_type")?.Value ?? string.Empty;
+        return user.FindFirst("usertype")?.Value ?? string.Empty;
     }
 
     public static bool HasPermission(this ClaimsPrincipal user, string permission)

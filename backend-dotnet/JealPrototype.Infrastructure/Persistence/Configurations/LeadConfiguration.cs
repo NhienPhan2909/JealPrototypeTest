@@ -45,10 +45,8 @@ public class LeadConfiguration : IEntityTypeConfiguration<Lead>
             .HasMaxLength(20)
             .HasColumnName("status")
             .HasConversion(
-                s => s == LeadStatus.InProgress ? "in progress" : s.ToString().ToLower(),
-                s => s == "received" ? LeadStatus.Received 
-                    : s == "in progress" ? LeadStatus.InProgress 
-                    : LeadStatus.Done);
+                s => StatusToString(s),
+                s => StringToStatus(s));
 
         // EasyCars Integration Fields
         builder.Property(l => l.EasyCarsLeadNumber)
@@ -90,6 +88,12 @@ public class LeadConfiguration : IEntityTypeConfiguration<Lead>
             .HasMaxLength(20)
             .HasColumnName("rating");
 
+        builder.Property(l => l.StatusSyncedAt)
+            .HasColumnName("status_synced_at");
+
+        builder.Property(l => l.LastKnownEasyCarsStatus)
+            .HasColumnName("last_known_easycars_status");
+
         builder.Property(l => l.CreatedAt)
             .HasColumnName("created_at")
             .HasDefaultValueSql("NOW()");
@@ -120,5 +124,24 @@ public class LeadConfiguration : IEntityTypeConfiguration<Lead>
             .WithMany()
             .HasForeignKey(l => l.VehicleId)
             .OnDelete(DeleteBehavior.SetNull);
+    }
+
+    private static string StatusToString(LeadStatus s)
+    {
+        if (s == LeadStatus.InProgress) return "in progress";
+        if (s == LeadStatus.Won) return "won";
+        if (s == LeadStatus.Lost) return "lost";
+        if (s == LeadStatus.Deleted) return "deleted";
+        return s.ToString().ToLower();
+    }
+
+    private static LeadStatus StringToStatus(string s)
+    {
+        if (s == "received") return LeadStatus.Received;
+        if (s == "in progress") return LeadStatus.InProgress;
+        if (s == "won") return LeadStatus.Won;
+        if (s == "lost") return LeadStatus.Lost;
+        if (s == "deleted") return LeadStatus.Deleted;
+        return LeadStatus.Done;
     }
 }

@@ -192,8 +192,10 @@ public class EasyCarsStockData
 - `Status` ("Available", "Sold", "Reserved") → `StockStatus` enum
 
 **String to Boolean Conversions:**
-- `AirConditioning`, `CruiseControl`, `ABS`, etc. → bool
-- Handle: "true", "false", "yes", "no", "1", "0" (case-insensitive)
+- `AirConditioning`, `CruiseControl`, `ABS`, etc. → `bool`
+- The real EasyCars API returns these as **empty strings `""`** (not `true`/`false`)
+- A custom `FlexibleBoolConverter` (`JealPrototype.Application.Converters`) handles: `""` → `false`, `"Yes"`/`"True"`/`"1"` → `true`, `"No"`/`"False"`/`"0"` → `false`, actual `bool` and numeric values
+- All 10 optional feature bool fields in `StockItem` use `[JsonConverter(typeof(FlexibleBoolConverter))]`
 
 **String to Decimal Conversions:**
 - `Price`, `CostPrice`, `RetailPrice`, `WeeklyCost` → decimal
@@ -223,13 +225,15 @@ public class EasyCarsStockData
 | `Make` | Empty string | "Unknown" |
 | `Model` | Empty string | "Unknown" |
 | `Year` | 0 or invalid | Current year - 1 |
-| `Price` | 0 or null | 0 (required field) |
+| `Price` | **null** (API returns null) | 0 (required field) — `decimal?` in DTO |
 | `VIN` | Empty | Generate placeholder: "SYNC-{StockNumber}" |
-| `Odometer` | 0 or null | 0 |
+| `Odometer` | **null** (API returns null) | 0 — `int?` in DTO |
 | `Description` | Empty | "No description available" |
 | `Colour` | Empty | "Not specified" |
 | `Doors` | 0 | 4 (sedan default) |
 | `Seats` | 0 | 5 (sedan default) |
+
+> **⚠️ Verified:** The real EasyCars test API returns `"Price": null` and `"Odometer": null`. The `StockItem` DTO uses `decimal?` and `int?` for these fields. The mapper uses `stockItem.Price?.ToString()` and `stockItem.Odometer ?? 0`.
 
 **Validation Rules:**
 - VIN must be unique (duplicate detection logic)
@@ -986,9 +990,10 @@ The following are **NOT** included in Story 2.2:
 
 **3. Data Type Conversions:**
 - Enum mapping: "new" → New, "used"/"demo" → Used (no Demo enum value)
-- Decimal parsing: Regex to strip currency symbols
+- Decimal parsing: Regex to strip currency symbols; `Price` and `Odometer` are nullable (`decimal?`/`int?`) since the real API returns null for these fields
 - Year validation: 1900-2100 range, defaults to current year - 1
-- Negative mileage: Math.Max(0, odometer)
+- Negative mileage: `Math.Max(0, stockItem.Odometer ?? 0)`
+- **Bool fields (real API quirk):** Optional features (`AirConditioning`, `CruiseControl`, `ABS`, etc.) are returned as empty strings `""` by the real API. Handled by `FlexibleBoolConverter` applied via `[JsonConverter]` attribute on each bool field in `StockItem`
 
 **4. Raw Data Storage:**
 - Complete StockItem serialized to JSON
@@ -1165,6 +1170,17 @@ Passed!  - Failed:     0, Passed:    23, Skipped:     0, Total:    23, Duration:
 1. ⚠️ VehicleCondition enum missing "Demo" value (Demo mapped to Used) - acceptable workaround
 2. ⚠️ Tests don't verify logger.LogXXX calls explicitly - acceptable, behavior is correct
 3. ⚠️ Database migrations not created - deferred to Story 2.3
+
+### Post-Integration Fixes (Applied After Real API Testing)
+
+The following fixes were applied after verifying against the real EasyCars test API (`https://testmy.easycars.com.au/TestECService`):
+
+| Issue | Root Cause | Fix Applied |
+|-------|------------|-------------|
+| `JsonException` on `"AirConditioning":""` | API returns empty string for bool fields | Added `FlexibleBoolConverter` in `Converters/` with `[JsonConverter]` on all 10 optional feature bool properties in `StockItem` |
+| `JsonException` on `"Price":null` / `"Odometer":null` | DTO had non-nullable `decimal`/`int` | Changed to `decimal?` / `int?`; mapper uses `?.ToString()` and `?? 0` |
+| `22P02: invalid input syntax for type json` on `features` column | `KeyFeatures` (comma-separated string) stored directly into `jsonb` column | `ToFeaturesJson()` helper splits on commas and serializes as JSON array before passing to `Vehicle.UpdateEasyCarsData()` |
+| 0 vehicles synced | `[JsonPropertyName("Stocks")]` override broke `"StockList"` deserialization | Reverted override; `StockResponse.StockList` matches API key by name automatically |
 
 ### Recommendations for Production
 

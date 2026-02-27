@@ -11,7 +11,7 @@ import { formatDateTime, formatDuration } from '../utils/syncFormatters';
 /**
  * SyncDetailsModal - Modal displaying detailed sync log information
  */
-export default function SyncDetailsModal({ syncLogId, dealershipId, onClose }) {
+export default function SyncDetailsModal({ syncLogId, dealershipId, onClose, apiBasePath = '/api/easycars/sync-logs', itemsLabel = 'Vehicles Processed' }) {
   const [details, setDetails] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -22,7 +22,7 @@ export default function SyncDetailsModal({ syncLogId, dealershipId, onClose }) {
       setError(null);
 
       try {
-        const response = await apiRequest(`/api/easycars/sync-logs/${syncLogId}?dealershipId=${dealershipId}`);
+        const response = await apiRequest(`${apiBasePath}/${syncLogId}?dealershipId=${dealershipId}`);
         
         if (response.ok) {
           const data = await response.json();
@@ -63,7 +63,7 @@ export default function SyncDetailsModal({ syncLogId, dealershipId, onClose }) {
     const text = `Sync Details - ${formatDateTime(details.syncedAt, true)}
 Status: ${details.status}
 Duration: ${formatDuration(details.durationMs)}
-Vehicles Processed: ${details.itemsProcessed}
+${itemsLabel}: ${details.itemsProcessed}
 Successfully Synced: ${details.itemsSucceeded}
 Failed: ${details.itemsFailed}
 
@@ -157,7 +157,7 @@ ${details.errors.length > 0 ? 'Errors:\n' + details.errors.map((e, i) => `${i + 
                 <div className="bg-gray-50 rounded p-4">
                   <ul className="space-y-2">
                     <li className="flex justify-between">
-                      <span className="text-gray-600">Vehicles Processed:</span>
+                      <span className="text-gray-600">{itemsLabel}:</span>
                       <span className="font-medium">{details.itemsProcessed}</span>
                     </li>
                     <li className="flex justify-between">
@@ -226,5 +226,7 @@ ${details.errors.length > 0 ? 'Errors:\n' + details.errors.map((e, i) => `${i + 
 SyncDetailsModal.propTypes = {
   syncLogId: PropTypes.number.isRequired,
   dealershipId: PropTypes.number,
-  onClose: PropTypes.func.isRequired
+  onClose: PropTypes.func.isRequired,
+  apiBasePath: PropTypes.string,
+  itemsLabel: PropTypes.string
 };

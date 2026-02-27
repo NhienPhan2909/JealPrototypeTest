@@ -46,14 +46,14 @@ public class RequireDealershipAccessAttribute : Attribute, IAsyncActionFilter
         }
 
         // User is authenticated - validate tenant isolation
-        var userType = user.FindFirst("user_type")?.Value;
+        var userType = user.FindFirst("usertype")?.Value;
         if (AllowAdmin && userType == "Admin")
         {
             await next();
             return;
         }
 
-        var userDealershipIdClaim = user.FindFirst("dealership_id")?.Value;
+        var userDealershipIdClaim = user.FindFirst("dealershipid")?.Value;
         if (string.IsNullOrEmpty(userDealershipIdClaim) || !int.TryParse(userDealershipIdClaim, out int userDealershipId))
         {
             // Authenticated user without dealership_id (not Admin) - deny access

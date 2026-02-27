@@ -30,6 +30,7 @@ export default function StockSyncAdminPage() {
   // Polling refs
   const pollingIntervalRef = useRef(null);
   const pollingTimeoutRef = useRef(null);
+  const syncTriggerTimeRef = useRef(null);
 
   /**
    * Fetch sync status from API
@@ -114,20 +115,24 @@ export default function StockSyncAdminPage() {
       const status = await fetchSyncStatus();
       
       if (status && status.status && status.status !== 'InProgress') {
-        // Sync completed
-        stopPolling();
-        setIsSyncing(false);
-        
-        // Refresh history
-        await fetchSyncHistory();
-        
-        // Show completion notification
-        if (status.status === 'Success') {
-          showToast('success', `Sync completed successfully! ${status.itemsSucceeded} vehicles synced.`);
-        } else if (status.status === 'Failed') {
-          showToast('error', 'Sync failed. Check details for more information.');
-        } else if (status.status === 'PartialSuccess') {
-          showToast('warning', `Sync partially successful: ${status.itemsSucceeded} succeeded, ${status.itemsFailed} failed.`);
+        // Only stop if this sync result is from AFTER we triggered
+        const syncedAt = status.lastSyncedAt ? new Date(status.lastSyncedAt) : null;
+        if (syncedAt && syncTriggerTimeRef.current && syncedAt >= syncTriggerTimeRef.current) {
+          // Sync completed
+          stopPolling();
+          setIsSyncing(false);
+          
+          // Refresh history
+          await fetchSyncHistory();
+          
+          // Show completion notification
+          if (status.status === 'Success') {
+            showToast('success', `Sync completed successfully! ${status.itemsSucceeded} vehicles synced.`);
+          } else if (status.status === 'Failed') {
+            showToast('error', 'Sync failed. Check details for more information.');
+          } else if (status.status === 'PartialSuccess') {
+            showToast('warning', `Sync partially successful: ${status.itemsSucceeded} succeeded, ${status.itemsFailed} failed.`);
+          }
         }
       }
     }, 5000); // 5 seconds
@@ -173,6 +178,7 @@ export default function StockSyncAdminPage() {
 
     try {
       setIsSyncing(true);
+      syncTriggerTimeRef.current = new Date();
       showToast('info', 'Sync started...');
 
       const response = await apiRequest(`/api/easycars/sync/trigger?dealershipId=${selectedDealership?.id}`, {

@@ -1,3 +1,4 @@
+using JealPrototype.Application.BackgroundJobs;
 using JealPrototype.Application.Interfaces;
 using JealPrototype.Application.Interfaces.Security;
 using JealPrototype.Domain.Interfaces;
@@ -51,6 +52,7 @@ public static class InfrastructureServiceExtensions
         services.AddScoped<IEasyCarsSyncLogRepository, EasyCarsSyncLogRepository>();
         services.AddScoped<IDealershipSettingsRepository, DealershipSettingsRepository>();
         services.AddScoped<ISystemSettingsRepository, SystemSettingsRepository>();
+        services.AddScoped<ILeadStatusConflictRepository, LeadStatusConflictRepository>();
 
         services.AddScoped<IAuthService, JwtAuthService>();
         services.AddScoped<IEmailService, EmailService>();
@@ -81,8 +83,17 @@ public static class InfrastructureServiceExtensions
         // Register EasyCars stock mapper (Story 2.2)
         services.AddScoped<IEasyCarsStockMapper, JealPrototype.Application.Services.EasyCars.EasyCarsStockMapper>();
 
+        // Register EasyCars lead mapper (Story 3.2)
+        services.AddScoped<IEasyCarsLeadMapper, JealPrototype.Application.Services.EasyCars.EasyCarsLeadMapper>();
+
         // Register EasyCars stock sync service (Story 2.3)
         services.AddScoped<IEasyCarsStockSyncService, JealPrototype.Application.Services.EasyCars.EasyCarsStockSyncService>();
+
+        // Register EasyCars lead sync service (Story 3.3)
+        services.AddScoped<IEasyCarsLeadSyncService, JealPrototype.Application.Services.EasyCars.EasyCarsLeadSyncService>();
+
+        // Register EasyCars lead sync background job (Story 3.3)
+        services.AddScoped<LeadSyncBackgroundJob>();
 
         // Register image download service (Story 2.6)
         services.AddHttpClient("ImageDownload")

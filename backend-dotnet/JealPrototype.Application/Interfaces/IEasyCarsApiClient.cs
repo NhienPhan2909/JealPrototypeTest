@@ -97,4 +97,39 @@ public interface IEasyCarsApiClient
         int dealershipId,
         string? yardCode = null,
         CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Creates a new lead in EasyCars API
+    /// </summary>
+    Task<CreateLeadResponse> CreateLeadAsync(
+        string clientId,
+        string clientSecret,
+        string environment,
+        int dealershipId,
+        CreateLeadRequest request,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Updates an existing lead in EasyCars API
+    /// </summary>
+    Task<UpdateLeadResponse> UpdateLeadAsync(
+        string clientId,
+        string clientSecret,
+        string environment,
+        int dealershipId,
+        UpdateLeadRequest request,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Retrieves lead details from EasyCars API
+    /// </summary>
+    Task<LeadDetailResponse> GetLeadDetailAsync(
+        string clientId,
+        string clientSecret,
+        string accountNumber,
+        string accountSecret,
+        string environment,
+        int dealershipId,
+        string leadNumber,
+        CancellationToken cancellationToken = default);
 }

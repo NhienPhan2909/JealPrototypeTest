@@ -104,7 +104,7 @@ public interface IEasyCarsStockMapper
 - Handles null/empty fields gracefully with sensible defaults
 - Uses `StockNumber` as unique identifier for duplicate detection
 - Creates vehicle title from Make + Model + Badge + YearGroup
-- Maps ImageURLs array to vehicle Images list
+- Maps ImageURLs (comma-separated string) to vehicle Images list by splitting on ','
 
 ---
 

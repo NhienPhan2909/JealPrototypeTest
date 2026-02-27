@@ -136,7 +136,11 @@ public class EasyCarsStockSyncService : IEasyCarsStockSyncService
 
             if (stockItems == null || !stockItems.Any())
             {
-                _logger.LogWarning("No stock items returned from EasyCars API for dealership {DealershipId}",
+                _logger.LogWarning(
+                    "No stock items returned from EasyCars API for dealership {DealershipId}. " +
+                    "Possible causes: (1) vehicles not published/enabled for advertisement in EasyCars portal, " +
+                    "(2) AccountNumber does not match the account containing those vehicles, " +
+                    "(3) AccountSecret is incorrect. Check the credential values shown above against what EasyCars provided.",
                     credential.DealershipId);
                 return new List<StockItem>();
             }

@@ -4,5 +4,8 @@ public enum LeadStatus
 {
     Received,
     InProgress,
-    Done
+    Done,      // Legacy — maps to Won (50) on outbound; keep for backward compat
+    Won,
+    Lost,
+    Deleted
 }

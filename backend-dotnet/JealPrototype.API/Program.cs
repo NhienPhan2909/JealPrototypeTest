@@ -45,6 +45,7 @@ builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
         options.JsonSerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
+        options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
     });
 
 // Add HttpClient for API calls
@@ -76,6 +77,7 @@ builder.Services.AddScoped<GetCurrentUserUseCase>();
 
 // Background Jobs
 builder.Services.AddScoped<JealPrototype.Application.BackgroundJobs.StockSyncBackgroundJob>();
+builder.Services.AddScoped<JealPrototype.Application.BackgroundJobs.LeadSyncBackgroundJob>();
 
 // Dealership
 builder.Services.AddScoped<CreateDealershipUseCase>();
@@ -201,6 +203,20 @@ using (var scope = app.Services.CreateScope())
         "easycar-stock-sync",
         job => job.ExecuteAsync(CancellationToken.None),
         cronExpression,
+        new Hangfire.RecurringJobOptions { TimeZone = TimeZoneInfo.Utc });
+
+    var leadSyncCron = await systemSettingsRepo.GetValueAsync("easycar_lead_sync_cron") ?? "0 * * * *";
+    recurringJobManager.AddOrUpdate<JealPrototype.Application.BackgroundJobs.LeadSyncBackgroundJob>(
+        "easycar-lead-inbound-sync",
+        job => job.ExecuteInboundSyncAsync(CancellationToken.None),
+        leadSyncCron,
+        new Hangfire.RecurringJobOptions { TimeZone = TimeZoneInfo.Utc });
+
+    var leadStatusSyncCron = await systemSettingsRepo.GetValueAsync("easycar_lead_status_sync_cron") ?? "0 * * * *";
+    recurringJobManager.AddOrUpdate<JealPrototype.Application.BackgroundJobs.LeadSyncBackgroundJob>(
+        "easycar-lead-status-sync",
+        job => job.ExecuteStatusSyncAsync(CancellationToken.None),
+        leadStatusSyncCron,
         new Hangfire.RecurringJobOptions { TimeZone = TimeZoneInfo.Utc });
 }
 

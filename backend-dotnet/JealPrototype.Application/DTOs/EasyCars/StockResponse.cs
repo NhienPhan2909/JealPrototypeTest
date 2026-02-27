@@ -6,9 +6,9 @@ namespace JealPrototype.Application.DTOs.EasyCars;
 public class StockResponse : EasyCarsBaseResponse
 {
     /// <summary>
-    /// List of stock items returned from the API
+    /// List of stock items returned from the API (mapped from "StockList" field)
     /// </summary>
-    public List<StockItem>? Stocks { get; set; }
+    public List<StockItem>? StockList { get; set; }
 
     /// <summary>
     /// Total number of records (if pagination is supported)

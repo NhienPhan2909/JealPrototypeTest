@@ -12,4 +12,5 @@ public class LeadResponseDto
     public string Message { get; set; } = null!;
     public string Status { get; set; } = "received";
     public DateTime CreatedAt { get; set; }
+    public string? EasyCarsLeadNumber { get; set; }
 }

@@ -23,6 +23,10 @@ public class Lead : BaseEntity
     public bool FinanceInterested { get; private set; } = false;
     public string? Rating { get; private set; }
 
+    // Status sync fields (Story 3.6)
+    public DateTime? StatusSyncedAt { get; private set; }
+    public int? LastKnownEasyCarsStatus { get; private set; }
+
     public Dealership Dealership { get; private set; } = null!;
     public Vehicle? Vehicle { get; private set; }
 
@@ -99,4 +103,24 @@ public class Lead : BaseEntity
     public void MarkSyncedToEasyCars(DateTime syncTime) => LastSyncedToEasyCars = syncTime;
 
     public void MarkSyncedFromEasyCars(DateTime syncTime) => LastSyncedFromEasyCars = syncTime;
+
+    /// <summary>
+    /// Records that this lead's status was successfully pushed to EasyCars.
+    /// </summary>
+    public void MarkStatusSyncedToEasyCars(int easyCarsStatus)
+    {
+        StatusSyncedAt = DateTime.UtcNow;
+        LastKnownEasyCarsStatus = easyCarsStatus;
+    }
+
+    /// <summary>
+    /// Business rule guard: returns false if attempting to un-delete a lead.
+    /// A lead marked Deleted can never be changed to a non-Deleted status automatically.
+    /// </summary>
+    public bool CanChangeStatusTo(LeadStatus newStatus)
+    {
+        if (Status == LeadStatus.Deleted && newStatus != LeadStatus.Deleted)
+            return false;
+        return true;
+    }
 }

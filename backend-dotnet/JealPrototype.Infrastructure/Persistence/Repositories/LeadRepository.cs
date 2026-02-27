@@ -72,4 +72,12 @@ public class LeadRepository : ILeadRepository
             .Include(l => l.Vehicle)
             .FirstOrDefaultAsync(l => l.Id == id && l.DealershipId == dealershipId, cancellationToken);
     }
+
+    public async Task<IEnumerable<Lead>> GetLeadsWithEasyCarsNumberAsync(int dealershipId, CancellationToken cancellationToken = default)
+    {
+        return await _context.Leads
+            .Where(l => l.DealershipId == dealershipId && l.EasyCarsLeadNumber != null)
+            .OrderByDescending(l => l.LastSyncedFromEasyCars ?? l.CreatedAt)
+            .ToListAsync(cancellationToken);
+    }
 }

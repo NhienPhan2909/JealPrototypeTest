@@ -25,6 +25,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<EasyCarsStockData> EasyCarsStockData => Set<EasyCarsStockData>();
     public DbSet<DealershipSettings> DealershipSettings => Set<DealershipSettings>();
     public DbSet<SystemSettings> SystemSettings => Set<SystemSettings>();
+    public DbSet<LeadStatusConflict> LeadStatusConflicts => Set<LeadStatusConflict>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

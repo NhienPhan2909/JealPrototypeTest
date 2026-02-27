@@ -157,10 +157,7 @@ public class EasyCarsApiClient : IEasyCarsApiClient
 
             if (requestBody != null && (method == HttpMethod.Post || method == HttpMethod.Put))
             {
-                var jsonContent = JsonSerializer.Serialize(requestBody, new JsonSerializerOptions
-                {
-                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-                });
+                var jsonContent = JsonSerializer.Serialize(requestBody);
                 request.Content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
 
                 _logger.LogDebug(
@@ -200,6 +197,11 @@ public class EasyCarsApiClient : IEasyCarsApiClient
 
             var elapsed = (DateTime.UtcNow - startTime).TotalMilliseconds;
 
+            _logger.LogInformation(
+                "EasyCars {Endpoint} response: status={Status}, body={Body}",
+                endpoint, response.StatusCode,
+                responseContent.Length > 2000 ? responseContent[..2000] + "..." : responseContent);
+
             // Parse response
             var typedResponse = JsonSerializer.Deserialize<T>(
                 responseContent,
@@ -213,8 +215,8 @@ public class EasyCarsApiClient : IEasyCarsApiClient
                 throw new EasyCarsUnknownException("Invalid response format from EasyCars API", -1);
             }
 
-            // Handle response codes
-            HandleResponseCode(typedResponse.ResponseCode, typedResponse.ResponseMessage);
+            // Handle response codes - API uses "Code" field (not "ResponseCode")
+            HandleResponseCode(typedResponse.Code, typedResponse.ResponseMessage);
 
             _logger.LogInformation(
                 "Request to {Endpoint} completed successfully in {ElapsedMs}ms",
@@ -452,6 +454,92 @@ public class EasyCarsApiClient : IEasyCarsApiClient
         return sanitized.Length > 500 ? sanitized[..500] + "..." : sanitized;
     }
 
+    /// <inheritdoc />
+    public async Task<CreateLeadResponse> CreateLeadAsync(
+        string clientId,
+        string clientSecret,
+        string environment,
+        int dealershipId,
+        CreateLeadRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        _logger.LogInformation(
+            "Creating lead for dealership {DealershipId}, environment: {Environment}",
+            dealershipId, environment);
+
+        var response = await ExecuteAuthenticatedRequestAsync<CreateLeadResponse>(
+            "/LeadService/CreateLead",
+            HttpMethod.Post,
+            clientId,
+            clientSecret,
+            environment,
+            dealershipId,
+            request,
+            cancellationToken);
+
+        return response;
+    }
+
+    /// <inheritdoc />
+    public async Task<UpdateLeadResponse> UpdateLeadAsync(
+        string clientId,
+        string clientSecret,
+        string environment,
+        int dealershipId,
+        UpdateLeadRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        _logger.LogInformation(
+            "Updating lead {LeadNumber} for dealership {DealershipId}, environment: {Environment}",
+            request.LeadNumber, dealershipId, environment);
+
+        var response = await ExecuteAuthenticatedRequestAsync<UpdateLeadResponse>(
+            "/LeadService/UpdateLead",
+            HttpMethod.Post,
+            clientId,
+            clientSecret,
+            environment,
+            dealershipId,
+            request,
+            cancellationToken);
+
+        return response;
+    }
+
+    /// <inheritdoc />
+    public async Task<LeadDetailResponse> GetLeadDetailAsync(
+        string clientId,
+        string clientSecret,
+        string accountNumber,
+        string accountSecret,
+        string environment,
+        int dealershipId,
+        string leadNumber,
+        CancellationToken cancellationToken = default)
+    {
+        _logger.LogInformation(
+            "Retrieving lead detail for lead {LeadNumber}, dealership {DealershipId}, environment: {Environment}",
+            leadNumber, dealershipId, environment);
+
+        var requestBody = new { AccountNumber = accountNumber, AccountSecret = accountSecret, LeadNumber = leadNumber };
+
+        var response = await ExecuteAuthenticatedRequestAsync<LeadDetailResponse>(
+            "/LeadService/GetLeadDetail",
+            HttpMethod.Post,
+            clientId,
+            clientSecret,
+            environment,
+            dealershipId,
+            requestBody,
+            cancellationToken);
+
+        _logger.LogDebug(
+            "Retrieved lead detail for lead {LeadNumber}, dealership {DealershipId}",
+            leadNumber, dealershipId);
+
+        return response;
+    }
+
     /// <summary>
     /// Retrieves advertisement stocks from EasyCars API
     /// </summary>
@@ -469,9 +557,17 @@ public class EasyCarsApiClient : IEasyCarsApiClient
             "Fetching advertisement stocks for dealership {DealershipId}, environment: {Environment}, yardCode: {YardCode}",
             dealershipId, environment, yardCode ?? "all");
 
+        _logger.LogInformation(
+            "Stock request credentials: AccountNumber='{AccountNumber}' (length={Len}), AccountSecret first4='{SecretFirst4}' length={SecretLen}, YardCode='{YardCode}'",
+            accountNumber?.Length > 4 ? accountNumber[..4] + "****" : accountNumber ?? "(null)",
+            accountNumber?.Length ?? 0,
+            accountSecret?.Length > 4 ? accountSecret[..4] : accountSecret ?? "(null)",
+            accountSecret?.Length ?? 0,
+            string.IsNullOrEmpty(yardCode) ? "(none - will return all stocks)" : yardCode);
+
         try
         {
-            // Build request body with AccountNumber/AccountSecret and optional YardCode
+            // Build request body: AccountNumber and AccountSecret are required; YardCode is optional
             object requestBody = string.IsNullOrEmpty(yardCode)
                 ? new { AccountNumber = accountNumber, AccountSecret = accountSecret }
                 : new { AccountNumber = accountNumber, AccountSecret = accountSecret, YardCode = yardCode };
@@ -488,7 +584,7 @@ public class EasyCarsApiClient : IEasyCarsApiClient
                 cancellationToken);
 
             // Return stocks or empty list if null
-            var stocks = response.Stocks ?? new List<StockItem>();
+            var stocks = response.StockList ?? new List<StockItem>();
 
             _logger.LogInformation(
                 "Successfully retrieved {StockCount} advertisement stocks for dealership {DealershipId}",

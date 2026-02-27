@@ -31,4 +31,10 @@ public interface IEasyCarsSyncLogRepository
     /// Gets paginated sync log history for a dealership
     /// </summary>
     Task<(List<EasyCarsSyncLog> Logs, int Total)> GetPagedHistoryAsync(int dealershipId, int page, int pageSize, CancellationToken cancellationToken = default);
+
+    /// <summary>Gets the most recent sync log for a dealership filtered by SyncType.</summary>
+    Task<EasyCarsSyncLog?> GetLastSyncByTypeAsync(int dealershipId, string syncType, CancellationToken cancellationToken = default);
+
+    /// <summary>Gets paginated sync log history filtered by SyncType.</summary>
+    Task<(List<EasyCarsSyncLog> Logs, int Total)> GetPagedHistoryByTypeAsync(int dealershipId, string syncType, int page, int pageSize, CancellationToken cancellationToken = default);
 }

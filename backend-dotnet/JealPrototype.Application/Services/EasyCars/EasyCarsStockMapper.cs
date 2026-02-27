@@ -98,12 +98,15 @@ public class EasyCarsStockMapper : IEasyCarsStockMapper
             // AC1, AC2, AC4: Sync images from EasyCars; track counts for AC8
             var imagesDownloaded = 0;
             var imagesFailed = 0;
-            if (stockItem.ImageURLs != null && stockItem.ImageURLs.Count > 0)
+            var imageUrls = stockItem.ImageURLs?
+                .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .ToList() ?? new List<string>();
+            if (imageUrls.Count > 0)
             {
                 var cloudinaryUrls = await _imageDownloadService.DownloadAndStoreImagesAsync(
-                    stockItem.ImageURLs, vehicle.Id, cancellationToken);
+                    imageUrls, vehicle.Id, cancellationToken);
                 imagesDownloaded = cloudinaryUrls.Count;
-                imagesFailed = stockItem.ImageURLs.Count - cloudinaryUrls.Count;
+                imagesFailed = imageUrls.Count - cloudinaryUrls.Count;
                 if (cloudinaryUrls.Count > 0)
                 {
                     vehicle.Update(vehicle.Make, vehicle.Model, vehicle.Year, vehicle.Price,
@@ -128,8 +131,8 @@ public class EasyCarsStockMapper : IEasyCarsStockMapper
         var make = GetStringOrDefault(stockItem.Make, "Unknown");
         var model = GetStringOrDefault(stockItem.Model, "Unknown");
         var year = GetValidYear(stockItem.Year);
-        var price = ParseDecimal(stockItem.Price.ToString());
-        var mileage = Math.Max(0, stockItem.Odometer);
+        var price = ParseDecimal(stockItem.Price?.ToString());
+        var mileage = Math.Max(0, stockItem.Odometer ?? 0);
         var condition = ConvertToVehicleCondition(stockItem.StockType);
         var title = $"{year} {make} {model}";
         var description = GetStringOrDefault(stockItem.Description, "No description available");
@@ -157,9 +160,9 @@ public class EasyCarsStockMapper : IEasyCarsStockMapper
             stockItem.Body,
             stockItem.FuelType,
             stockItem.Transmission,
-            stockItem.EngineSize,
+            string.IsNullOrEmpty(stockItem.EngineCapacity) ? stockItem.EngineSize?.ToString() : stockItem.EngineCapacity,
             stockItem.Doors > 0 ? stockItem.Doors : 4,
-            stockItem.KeyFeatures);
+            ToFeaturesJson(stockItem.KeyFeatures));
 
         return vehicle;
     }
@@ -169,8 +172,8 @@ public class EasyCarsStockMapper : IEasyCarsStockMapper
         var make = GetStringOrDefault(stockItem.Make, "Unknown");
         var model = GetStringOrDefault(stockItem.Model, "Unknown");
         var year = GetValidYear(stockItem.Year);
-        var price = ParseDecimal(stockItem.Price.ToString());
-        var mileage = Math.Max(0, stockItem.Odometer);
+        var price = ParseDecimal(stockItem.Price?.ToString());
+        var mileage = Math.Max(0, stockItem.Odometer ?? 0);
         var condition = ConvertToVehicleCondition(stockItem.StockType);
         var title = $"{year} {make} {model}";
         var description = GetStringOrDefault(stockItem.Description, "No description available");
@@ -197,9 +200,9 @@ public class EasyCarsStockMapper : IEasyCarsStockMapper
             stockItem.Body,
             stockItem.FuelType,
             stockItem.Transmission,
-            stockItem.EngineSize,
+            string.IsNullOrEmpty(stockItem.EngineCapacity) ? stockItem.EngineSize?.ToString() : stockItem.EngineCapacity,
             stockItem.Doors > 0 ? stockItem.Doors : 4,
-            stockItem.KeyFeatures);
+            ToFeaturesJson(stockItem.KeyFeatures));
     }
 
     private VehicleCondition ConvertToVehicleCondition(string? stockType)
@@ -242,7 +245,20 @@ public class EasyCarsStockMapper : IEasyCarsStockMapper
         return year;
     }
 
-    private decimal ParseDecimal(string value)
+    private static string? ToFeaturesJson(string? keyFeatures)
+    {
+        if (string.IsNullOrWhiteSpace(keyFeatures))
+            return null;
+
+        var items = keyFeatures
+            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Where(s => !string.IsNullOrWhiteSpace(s))
+            .ToList();
+
+        return items.Count == 0 ? null : JsonSerializer.Serialize(items);
+    }
+
+    private decimal ParseDecimal(string? value)
     {
         if (string.IsNullOrWhiteSpace(value))
             return 0;

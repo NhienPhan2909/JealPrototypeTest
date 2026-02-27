@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using JealPrototype.Application.Converters;
 
 namespace JealPrototype.Application.DTOs.EasyCars;
 
@@ -53,8 +54,9 @@ public class StockItem
     public string Badge { get; set; } = string.Empty;
 
     /// <summary>
-    /// Manufacturing year
+    /// Manufacturing year (API field: YearGroup)
     /// </summary>
+    [JsonPropertyName("YearGroup")]
     public int Year { get; set; }
 
     /// <summary>
@@ -68,18 +70,21 @@ public class StockItem
     public string Colour { get; set; } = string.Empty;
 
     /// <summary>
-    /// Number of doors
+    /// Number of doors (API field: DoorNum)
     /// </summary>
-    public int Doors { get; set; }
+    [JsonPropertyName("DoorNum")]
+    public int? Doors { get; set; }
 
     /// <summary>
-    /// Seating capacity
+    /// Seating capacity (API field: SeatCapacity)
     /// </summary>
-    public int Seats { get; set; }
+    [JsonPropertyName("SeatCapacity")]
+    public int? Seats { get; set; }
 
     /// <summary>
-    /// Transmission type (e.g., "Automatic", "Manual")
+    /// Transmission type (API field: GearType, e.g., "Automatic", "Manual")
     /// </summary>
+    [JsonPropertyName("GearType")]
     public string Transmission { get; set; } = string.Empty;
 
     /// <summary>
@@ -88,9 +93,14 @@ public class StockItem
     public string FuelType { get; set; } = string.Empty;
 
     /// <summary>
-    /// Engine size (e.g., "2.4L", "3.5L")
+    /// Engine capacity as a string (API field: EngineCapacity, e.g., "2.0L")
     /// </summary>
-    public string EngineSize { get; set; } = string.Empty;
+    public string EngineCapacity { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Engine size in cc as a number (API field: EngineSize, nullable)
+    /// </summary>
+    public decimal? EngineSize { get; set; }
 
     /// <summary>
     /// Number of cylinders
@@ -98,14 +108,15 @@ public class StockItem
     public int Cylinders { get; set; }
 
     /// <summary>
-    /// Drive type (e.g., "FWD", "RWD", "AWD", "4WD")
+    /// Drive type (API field: DriveTrain, e.g., "FWD", "RWD", "AWD", "4WD")
     /// </summary>
+    [JsonPropertyName("DriveTrain")]
     public string DriveType { get; set; } = string.Empty;
 
     /// <summary>
-    /// Odometer reading in kilometers
+    /// Odometer reading in kilometers (nullable — API may return null)
     /// </summary>
-    public int Odometer { get; set; }
+    public int? Odometer { get; set; }
 
     /// <summary>
     /// Registration expiry date
@@ -115,9 +126,9 @@ public class StockItem
     // ========== Pricing & Financial (8 fields) ==========
 
     /// <summary>
-    /// Listed price
+    /// Listed price (nullable — API may return null)
     /// </summary>
-    public decimal Price { get; set; }
+    public decimal? Price { get; set; }
 
     /// <summary>
     /// Cost price (dealer's cost)
@@ -157,8 +168,9 @@ public class StockItem
     // ========== Marketing & Description (10 fields) ==========
 
     /// <summary>
-    /// Main vehicle description
+    /// Main vehicle description (API field: AdvDescription)
     /// </summary>
+    [JsonPropertyName("AdvDescription")]
     public string Description { get; set; } = string.Empty;
 
     /// <summary>
@@ -209,9 +221,10 @@ public class StockItem
     // ========== Images & Media (5 fields) ==========
 
     /// <summary>
-    /// List of image URLs
+    /// Image URLs as a comma-separated string (API field: ImageURLs)
+    /// Split on ',' to get individual URLs.
     /// </summary>
-    public List<string> ImageURLs { get; set; } = new();
+    public string? ImageURLs { get; set; }
 
     /// <summary>
     /// Thumbnail image URL
@@ -265,51 +278,61 @@ public class StockItem
     /// <summary>
     /// Air conditioning available
     /// </summary>
+    [JsonConverter(typeof(FlexibleBoolConverter))]
     public bool AirConditioning { get; set; }
 
     /// <summary>
     /// Cruise control available
     /// </summary>
+    [JsonConverter(typeof(FlexibleBoolConverter))]
     public bool CruiseControl { get; set; }
 
     /// <summary>
     /// Power steering available
     /// </summary>
+    [JsonConverter(typeof(FlexibleBoolConverter))]
     public bool PowerSteering { get; set; }
 
     /// <summary>
     /// Power windows available
     /// </summary>
+    [JsonConverter(typeof(FlexibleBoolConverter))]
     public bool PowerWindows { get; set; }
 
     /// <summary>
     /// Power locks available
     /// </summary>
+    [JsonConverter(typeof(FlexibleBoolConverter))]
     public bool PowerLocks { get; set; }
 
     /// <summary>
     /// Anti-lock braking system (ABS) available
     /// </summary>
+    [JsonConverter(typeof(FlexibleBoolConverter))]
     public bool ABS { get; set; }
 
     /// <summary>
     /// Airbags available
     /// </summary>
+    [JsonConverter(typeof(FlexibleBoolConverter))]
     public bool Airbags { get; set; }
 
     /// <summary>
     /// Alloy wheels available
     /// </summary>
+    [JsonConverter(typeof(FlexibleBoolConverter))]
     public bool AlloyWheels { get; set; }
 
     /// <summary>
     /// Satellite navigation available
     /// </summary>
+    [JsonConverter(typeof(FlexibleBoolConverter))]
     public bool SatNav { get; set; }
 
     /// <summary>
     /// Sunroof available
     /// </summary>
+    [JsonConverter(typeof(FlexibleBoolConverter))]
     public bool Sunroof { get; set; }
 
     // ========== Dealer/Location Info (5 fields) ==========

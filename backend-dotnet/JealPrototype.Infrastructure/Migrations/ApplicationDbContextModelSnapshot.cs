@@ -615,6 +615,11 @@ namespace JealPrototype.Infrastructure.Migrations
                         .HasColumnType("character varying(20)")
                         .HasColumnName("status");
 
+                    b.Property<string>("SyncType")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("sync_type");
+
                     b.Property<DateTime>("SyncedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("synced_at");
@@ -633,6 +638,9 @@ namespace JealPrototype.Infrastructure.Migrations
 
                     b.HasIndex("SyncedAt")
                         .HasDatabaseName("idx_easycar_sync_logs_synced_at");
+
+                    b.HasIndex("DealershipId", "SyncType", "SyncedAt")
+                        .HasDatabaseName("idx_easycar_sync_logs_dealership_type_time");
 
                     b.ToTable("easycar_sync_logs", (string)null);
                 });
@@ -726,6 +734,10 @@ namespace JealPrototype.Infrastructure.Migrations
                         .HasDefaultValue(false)
                         .HasColumnName("finance_interested");
 
+                    b.Property<int?>("LastKnownEasyCarsStatus")
+                        .HasColumnType("integer")
+                        .HasColumnName("last_known_easycars_status");
+
                     b.Property<DateTime?>("LastSyncedFromEasyCars")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("last_synced_from_easycars");
@@ -762,6 +774,10 @@ namespace JealPrototype.Infrastructure.Migrations
                         .HasColumnType("character varying(20)")
                         .HasColumnName("status");
 
+                    b.Property<DateTime?>("StatusSyncedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("status_synced_at");
+
                     b.Property<int?>("VehicleId")
                         .HasColumnType("integer")
                         .HasColumnName("vehicle_id");
@@ -793,6 +809,83 @@ namespace JealPrototype.Infrastructure.Migrations
                         {
                             t.HasCheckConstraint("CK_lead_data_source", "data_source IN ('Manual', 'EasyCars', 'WebForm')");
                         });
+                });
+
+            modelBuilder.Entity("JealPrototype.Domain.Entities.LeadStatusConflict", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("NOW()");
+
+                    b.Property<int>("DealershipId")
+                        .HasColumnType("integer")
+                        .HasColumnName("dealership_id");
+
+                    b.Property<DateTime>("DetectedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("detected_at");
+
+                    b.Property<string>("EasyCarsLeadNumber")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("easycars_lead_number");
+
+                    b.Property<bool>("IsResolved")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("is_resolved");
+
+                    b.Property<int>("LeadId")
+                        .HasColumnType("integer")
+                        .HasColumnName("lead_id");
+
+                    b.Property<string>("LocalStatus")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("local_status");
+
+                    b.Property<int>("RemoteStatus")
+                        .HasColumnType("integer")
+                        .HasColumnName("remote_status");
+
+                    b.Property<string>("Resolution")
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)")
+                        .HasColumnName("resolution");
+
+                    b.Property<DateTime?>("ResolvedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("resolved_at");
+
+                    b.Property<string>("ResolvedBy")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("resolved_by");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DealershipId")
+                        .HasDatabaseName("idx_lead_status_conflicts_dealership");
+
+                    b.HasIndex("LeadId")
+                        .HasDatabaseName("idx_lead_status_conflicts_lead");
+
+                    b.HasIndex("DealershipId", "IsResolved")
+                        .HasDatabaseName("idx_lead_status_conflicts_dealership_unresolved");
+
+                    b.ToTable("lead_status_conflicts", (string)null);
                 });
 
             modelBuilder.Entity("JealPrototype.Domain.Entities.PromotionalPanel", b =>
@@ -963,33 +1056,33 @@ namespace JealPrototype.Infrastructure.Migrations
                         new
                         {
                             Key = "easycar_sync_enabled",
-                            CreatedAt = new DateTime(2026, 2, 25, 13, 17, 20, 936, DateTimeKind.Utc).AddTicks(8861),
+                            CreatedAt = new DateTime(2026, 2, 26, 23, 12, 17, 703, DateTimeKind.Utc).AddTicks(5975),
                             Description = "Global toggle for all EasyCars stock synchronization",
-                            UpdatedAt = new DateTime(2026, 2, 25, 13, 17, 20, 936, DateTimeKind.Utc).AddTicks(8863),
+                            UpdatedAt = new DateTime(2026, 2, 26, 23, 12, 17, 703, DateTimeKind.Utc).AddTicks(5978),
                             Value = "true"
                         },
                         new
                         {
                             Key = "easycar_sync_cron",
-                            CreatedAt = new DateTime(2026, 2, 25, 13, 17, 20, 936, DateTimeKind.Utc).AddTicks(8864),
+                            CreatedAt = new DateTime(2026, 2, 26, 23, 12, 17, 703, DateTimeKind.Utc).AddTicks(5979),
                             Description = "Cron expression for sync schedule (default: 2 AM daily)",
-                            UpdatedAt = new DateTime(2026, 2, 25, 13, 17, 20, 936, DateTimeKind.Utc).AddTicks(8864),
+                            UpdatedAt = new DateTime(2026, 2, 26, 23, 12, 17, 703, DateTimeKind.Utc).AddTicks(5979),
                             Value = "0 2 * * *"
                         },
                         new
                         {
                             Key = "easycar_sync_concurrency",
-                            CreatedAt = new DateTime(2026, 2, 25, 13, 17, 20, 936, DateTimeKind.Utc).AddTicks(8865),
+                            CreatedAt = new DateTime(2026, 2, 26, 23, 12, 17, 703, DateTimeKind.Utc).AddTicks(5980),
                             Description = "Max concurrent dealership syncs (1=sequential)",
-                            UpdatedAt = new DateTime(2026, 2, 25, 13, 17, 20, 936, DateTimeKind.Utc).AddTicks(8865),
+                            UpdatedAt = new DateTime(2026, 2, 26, 23, 12, 17, 703, DateTimeKind.Utc).AddTicks(5980),
                             Value = "1"
                         },
                         new
                         {
                             Key = "easycar_image_sync_enabled",
-                            CreatedAt = new DateTime(2026, 2, 25, 13, 17, 20, 936, DateTimeKind.Utc).AddTicks(8866),
+                            CreatedAt = new DateTime(2026, 2, 26, 23, 12, 17, 703, DateTimeKind.Utc).AddTicks(5981),
                             Description = "Enable/disable image sync during stock sync (default: true)",
-                            UpdatedAt = new DateTime(2026, 2, 25, 13, 17, 20, 936, DateTimeKind.Utc).AddTicks(8866),
+                            UpdatedAt = new DateTime(2026, 2, 26, 23, 12, 17, 703, DateTimeKind.Utc).AddTicks(5981),
                             Value = "true"
                         });
                 });

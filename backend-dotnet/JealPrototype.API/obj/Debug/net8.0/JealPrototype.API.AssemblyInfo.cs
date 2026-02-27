@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("JealPrototype.API")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+43296aff742c356732208e5be412cd398d691397")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+97441a1ea7f2bcb58249c1e304bd6945646bb73f")]
 [assembly: System.Reflection.AssemblyProductAttribute("JealPrototype.API")]
 [assembly: System.Reflection.AssemblyTitleAttribute("JealPrototype.API")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

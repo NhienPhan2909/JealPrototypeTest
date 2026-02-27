@@ -17,6 +17,7 @@ public class EasyCarsSyncLog : BaseEntity
     public string ErrorMessages { get; private set; } = "[]";
     public long DurationMs { get; private set; }
     public string ApiVersion { get; private set; } = "1.0";
+    public string? SyncType { get; private set; }
 
     public Dealership Dealership { get; private set; } = null!;
 
@@ -33,7 +34,8 @@ public class EasyCarsSyncLog : BaseEntity
         int itemsFailed,
         List<string> errors,
         long durationMs,
-        string apiVersion = "1.0")
+        string apiVersion = "1.0",
+        string? syncType = null)
     {
         if (dealershipId <= 0)
             throw new ArgumentException("Dealership ID must be positive", nameof(dealershipId));
@@ -57,7 +59,8 @@ public class EasyCarsSyncLog : BaseEntity
             ItemsFailed = itemsFailed,
             ErrorMessages = System.Text.Json.JsonSerializer.Serialize(errors ?? new List<string>()),
             DurationMs = durationMs,
-            ApiVersion = apiVersion
+            ApiVersion = apiVersion,
+            SyncType = syncType
         };
     }
 }

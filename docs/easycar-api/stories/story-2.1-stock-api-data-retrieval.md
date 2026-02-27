@@ -319,14 +319,14 @@ public class StockItem
 {
   "ResponseCode": 0,
   "ResponseMessage": "Success",
-  "Stocks": [
+  "StockList": [
     {
       "StockNumber": "ABC123",
       "VIN": "1HGCM82633A123456",
       "Make": "Honda",
       "Model": "Accord",
       "Year": 2023,
-      "Price": 35000.00,
+      "Price": null,
       // ... 60+ more fields
     }
   ]
@@ -357,7 +357,7 @@ public class StockItem
 // Response with pagination metadata
 {
   "ResponseCode": 0,
-  "Stocks": [...],
+  "StockList": [...],
   "TotalRecords": 523,
   "PageNumber": 1,
   "PageSize": 100,
@@ -596,7 +596,7 @@ public async Task GetAdvertisementStocksAsync_RealAPI_Success()
 **Endpoint:** `/GetAdvertisementStocks`  
 **Method:** POST  
 **Base URL:** 
-- Test: `https://test.easycars.com/api`
+- Test: `https://testmy.easycars.com.au/TestECService`
 - Production: `https://api.easycars.com/api`
 
 **Authentication:** Bearer token (JWT)  
@@ -617,7 +617,7 @@ public async Task GetAdvertisementStocksAsync_RealAPI_Success()
 {
   "ResponseCode": 0,
   "ResponseMessage": "Success",
-  "Stocks": [
+  "StockList": [
     {
       "StockNumber": "ABC123",
       "VIN": "1HGCM82633A123456",
@@ -632,29 +632,38 @@ public async Task GetAdvertisementStocksAsync_RealAPI_Success()
       "Colour": "White",
       "Doors": 4,
       "Seats": 5,
-      "Transmission": "Automatic",
+      "GearType": "Automatic",
       "FuelType": "Petrol",
-      "EngineSize": "2.4L",
+      "EngineSize": 1970,
       "Cylinders": 4,
-      "DriveType": "FWD",
-      "Odometer": 15000,
+      "DriveTrain": "FWD",
+      "Odometer": null,
       "RegistrationExpiry": "2025-06-30",
-      "Price": 35000.00,
+      "Price": null,
       "CostPrice": 30000.00,
       "RetailPrice": 37000.00,
-      "Description": "Excellent condition sedan...",
-      "ImageURLs": [
-        "https://images.easycars.com/vehicle1_front.jpg",
-        "https://images.easycars.com/vehicle1_rear.jpg"
-      ],
+      "AdvDescription": "Excellent condition sedan...",
+      "ImageURLs": "",
       "DateAdded": "2024-01-15T10:30:00Z",
       "DateUpdated": "2024-02-20T14:00:00Z",
-      "Status": "Available"
+      "Status": "Available",
+      "AirConditioning": "",
+      "CruiseControl": "",
+      "ABS": ""
       // ... 40+ more fields
     }
   ],
-  "TotalRecords": 1 // If pagination supported
+  "TotalRecords": 1
 }
+```
+
+> **⚠️ Real API Quirks (Verified Against Test API `https://testmy.easycars.com.au/TestECService`):**
+> - The vehicle array is returned under `"StockList"` (not `"Stocks"` as originally assumed)
+> - `"EngineSize"` is a **number** (cc, e.g., `1970`) not a string (e.g., `"2.4L"`) — use `"EngineCapacity"` for the text label
+> - `"ImageURLs"` is a **string** (comma-separated or empty `""`) not an array
+> - `"Price"` and `"Odometer"` **can be `null`** — DTOs must use nullable types (`decimal?`, `int?`)
+> - Optional feature fields (`"AirConditioning"`, `"CruiseControl"`, `"ABS"`, etc.) are returned as **empty strings** `""` not `true`/`false` booleans — requires `FlexibleBoolConverter`
+> - Field `"GearType"` maps to our `Transmission` property; `"DriveTrain"` maps to `DriveType`; `"AdvDescription"` maps to `Description`
 ```
 
 **Response (Error):**
@@ -712,7 +721,7 @@ public async Task<List<StockItem>> GetAdvertisementStocksAsync(
         requestBody,
         cancellationToken);
 
-    return response.Stocks ?? new List<StockItem>();
+    return response.StockList ?? new List<StockItem>();
 }
 ```
 
@@ -720,8 +729,9 @@ public async Task<List<StockItem>> GetAdvertisementStocksAsync(
 ```csharp
 public class StockResponse : EasyCarsBaseResponse
 {
-    public List<StockItem>? Stocks { get; set; }
-    public int? TotalRecords { get; set; } // If pagination supported
+    // "StockList" matches the actual API field name (not "Stocks")
+    public List<StockItem>? StockList { get; set; }
+    public int? TotalRecords { get; set; }
 }
 ```
 
@@ -1303,16 +1313,18 @@ All warnings are pre-existing (obsolete EF Core methods, nullable reference warn
    - Exception mapping clear and specific
    - **Assessment:** Best practice API client implementation
 
-2. **Pagination Unknown:**
-   - EasyCars API documentation unclear on pagination
-   - Added DTO fields for future support
-   - Needs verification with real API in integration testing
-   - **Risk:** LOW (most dealer stock lists < 500 vehicles fit in single response)
+2. **Field Names Verified Against Real API:**
+   - EasyCars test API returns `"StockList"` (not `"Stocks"`)
+   - `"EngineSize"` is a numeric value in cc (not a string like `"2.4L"`)
+   - `"ImageURLs"` is a plain string, not an array
+   - `"Price"` and `"Odometer"` can be `null`
+   - Optional feature booleans (`"AirConditioning"`, etc.) return `""` (empty string)
+   - **Status:** RESOLVED — all DTOs and mapper updated accordingly
 
 3. **Field Mapping:**
-   - 75 fields documented based on typical vehicle inventory systems
-   - Actual API may have fewer/different fields
-   - `JsonExtensionData` catches unmapped fields
+   - API field names verified against real test API
+   - `JsonExtensionData` catches any additional unmapped fields
+   - Key `JsonPropertyName` overrides applied: `GearType`→`Transmission`, `DriveTrain`→`DriveType`, `AdvDescription`→`Description`
    - **Risk:** LOW (graceful handling of missing/extra fields)
 
 4. **Test Coverage:**
@@ -1326,10 +1338,10 @@ All warnings are pre-existing (obsolete EF Core methods, nullable reference warn
 | Risk | Probability | Impact | Mitigation | Status |
 |------|-------------|--------|------------|--------|
 | EasyCars API changes field names | LOW | HIGH | JsonPropertyName attributes, JsonExtensionData | ✅ Mitigated |
-| Pagination required | MEDIUM | MEDIUM | DTO has pagination fields, implementation deferred | ⚠️ Monitor |
+| Pagination required | LOW | MEDIUM | DTO has pagination fields, single response works for test data | ✅ Accepted |
 | Large stock lists timeout | LOW | MEDIUM | 30s timeout, retry logic | ✅ Mitigated |
 | Test credentials unavailable | HIGH | LOW | Unit tests provide coverage | ✅ Accepted |
-| Null data from API | LOW | HIGH | Comprehensive null safety | ✅ Mitigated |
+| Null data from API | **CONFIRMED** | HIGH | Price/Odometer nullable, FlexibleBoolConverter for bool fields | ✅ **Fixed** |
 
 ### Production Readiness Assessment
 
@@ -1362,8 +1374,8 @@ All warnings are pre-existing (obsolete EF Core methods, nullable reference warn
 
 **What Could Be Improved:**
 - ⚠️ No integration test (requires live API credentials)
-- ⚠️ Pagination not implemented (deferred - API doesn't support it)
-- ⚠️ Field names assumed (need real API verification)
+- ✅ Pagination not needed — API returns all stock in a single response
+- ✅ Field names verified against real test API (StockList, EngineSize as number, ImageURLs as string, nullable Price/Odometer)
 
 **Confidence Level:** **VERY HIGH** - Implementation is solid, tests comprehensive, leverages proven infrastructure from Story 1.6.
 
@@ -1723,8 +1735,8 @@ Story 2.1 implementation **EXCEEDS expectations**. This is the first business va
 
 | Risk | Probability | Impact | Mitigation Strategy |
 |------|-------------|--------|---------------------|
-| **EasyCars API field names differ** | MEDIUM | HIGH | Add integration test, adjust JsonPropertyName attributes |
-| **Pagination required** | MEDIUM | MEDIUM | Implement in Story 2.2 if needed, DTO ready |
+| **EasyCars API field names differ** | **RESOLVED** | HIGH | StockList/EngineSize/ImageURLs/nullable fields all corrected against real API |
+| **Pagination required** | LOW | MEDIUM | Test API returns all stock in single response; DTO ready if needed |
 | **Large stock lists timeout** | LOW | MEDIUM | Monitor in production, add pagination if needed |
 | **Test credentials unavailable** | HIGH | LOW | Unit tests provide confidence, defer integration test |
 

@@ -1,5 +1,7 @@
+using Hangfire;
 using JealPrototype.API.Extensions;
 using JealPrototype.API.Filters;
+using JealPrototype.Application.BackgroundJobs;
 using JealPrototype.Application.DTOs.Common;
 using JealPrototype.Application.DTOs.Lead;
 using JealPrototype.Application.UseCases.Lead;
@@ -17,17 +19,20 @@ public class LeadsController : ControllerBase
     private readonly GetLeadsUseCase _getLeadsUseCase;
     private readonly UpdateLeadStatusUseCase _updateLeadStatusUseCase;
     private readonly DeleteLeadUseCase _deleteLeadUseCase;
+    private readonly ILogger<LeadsController> _logger;
 
     public LeadsController(
         CreateLeadUseCase createLeadUseCase,
         GetLeadsUseCase getLeadsUseCase,
         UpdateLeadStatusUseCase updateLeadStatusUseCase,
-        DeleteLeadUseCase deleteLeadUseCase)
+        DeleteLeadUseCase deleteLeadUseCase,
+        ILogger<LeadsController> logger)
     {
         _createLeadUseCase = createLeadUseCase;
         _getLeadsUseCase = getLeadsUseCase;
         _updateLeadStatusUseCase = updateLeadStatusUseCase;
         _deleteLeadUseCase = deleteLeadUseCase;
+        _logger = logger;
     }
 
     [HttpPost]
@@ -37,6 +42,19 @@ public class LeadsController : ControllerBase
         
         if (!result.Success)
             return BadRequest(result);
+
+        // Enqueue outbound sync to EasyCars (Story 3.3 AC8)
+        try
+        {
+            BackgroundJob.Enqueue<LeadSyncBackgroundJob>(
+                job => job.SyncLeadAsync(result.Data!.Id, CancellationToken.None));
+            _logger.LogInformation("Enqueued lead sync job for lead {LeadId}", result.Data?.Id);
+        }
+        catch (Exception ex)
+        {
+            // Non-fatal: log but don't fail the lead creation response
+            _logger.LogWarning(ex, "Failed to enqueue lead sync for lead {LeadId}", result.Data?.Id);
+        }
 
         return CreatedAtAction(nameof(GetLeads), new { dealershipId = request.DealershipId }, result);
     }

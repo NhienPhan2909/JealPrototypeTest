@@ -31,6 +31,7 @@ import BlogForm from './pages/admin/BlogForm';
 import UserManagement from './pages/admin/UserManagement';
 import DealershipManagement from './pages/admin/DealershipManagement';
 import StockSyncAdminPage from './pages/admin/easycars/StockSyncAdminPage';
+import LeadSyncAdminPage from './pages/admin/easycars/LeadSyncAdminPage';
 
 /**
  * App - Root component with routing configuration.
@@ -85,6 +86,7 @@ function App() {
             <Route path="users" element={<UserManagement />} />
             <Route path="dealerships" element={<DealershipManagement />} />
             <Route path="easycars/stock-sync" element={<StockSyncAdminPage />} />
+            <Route path="easycars/lead-sync" element={<LeadSyncAdminPage />} />
           </Route>
           </Routes>
         </BrowserRouter>

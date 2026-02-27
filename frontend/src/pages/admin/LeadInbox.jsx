@@ -357,7 +357,14 @@ function LeadInbox() {
                       key={lead.id}
                       className="hover:bg-gray-50"
                     >
-                      <td className="px-4 py-2 border">{decodeHtmlEntities(lead.name)}</td>
+                      <td className="px-4 py-2 border">
+                        {decodeHtmlEntities(lead.name)}
+                        {lead.easyCarsLeadNumber && (
+                          <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                            EasyCars
+                          </span>
+                        )}
+                      </td>
                       <td className="px-4 py-2 border">{lead.email}</td>
                       <td className="px-4 py-2 border">{decodeHtmlEntities(lead.phone)}</td>
                       <td className="px-4 py-2 border">
