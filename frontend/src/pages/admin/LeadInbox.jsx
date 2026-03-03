@@ -283,6 +283,21 @@ function LeadInbox() {
       <div className="max-w-7xl mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold mb-6 text-gray-800">Lead Inbox</h1>
 
+        {/* EasyCars login notice */}
+        <div className="mb-6">
+          <p className="text-gray-700">
+            Please log in to EasyCars to refer to your leads:{' '}
+            <a
+              href="https://testmy.easycars.com.au/test/Home/Login/L3Rlc3QvVmVoaWNsZXMvTWFuYWdl0"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-600 underline hover:text-blue-800"
+            >
+              https://testmy.easycars.com.au/test/Home/Login/L3Rlc3QvVmVoaWNsZXMvTWFuYWdl0
+            </a>
+          </p>
+        </div>
+
         {/* Read-only notice for users without edit permission */}
         {!canEditLeads && (
           <div className="card bg-blue-50 border-blue-200 mb-4">
